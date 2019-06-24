@@ -39,9 +39,36 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
 //            queryGanksOrderly()
 //        }
 
+//        launch {
+//            queryGanksAsync()
+//        }
+
+//        launch {
+//            queryGanksJack()
+//        }
+
         launch {
-            queryGanksAsync()
+            val androidGankSuspend = ApiSource.apiService.getAndroidGankSuspend()
+            androidGankSuspend.results!!
+            val iosGankSuspend = ApiSource.apiService.getIosGankSuspend()
+            iosGankSuspend.results!!
         }
+    }
+
+    private fun queryGanksSuspend() {
+        mutableListOf<Gank>().apply {
+        }
+    }
+
+    suspend fun queryGanksJack(): List<Gank> {
+//        return withContext(Dispatchers.Main) {
+            val result = mutableListOf<Gank>().apply {
+                addAll(ApiSource.apiService.getAndroidGankDeferred().await().results!!)
+                addAll(ApiSource.apiService.getIosGankDeferred().await().results!!)
+            }
+
+            return result
+//        }
     }
 
     suspend fun queryGanksAsync(): List<Gank> {

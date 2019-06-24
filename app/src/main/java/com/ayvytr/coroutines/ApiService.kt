@@ -3,6 +3,7 @@ package com.ayvytr.coroutines
 import com.ayvytr.commonlibrary.bean.BaseGank
 import com.ayvytr.okhttploginterceptor.LoggingInterceptor
 import com.ayvytr.okhttploginterceptor.LoggingLevel
+import kotlinx.coroutines.Deferred
 import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
@@ -26,6 +27,18 @@ interface ApiService {
 
     @GET("data/Android/2/1")
     fun getAndroidGank(): Call<BaseGank>
+
+    @GET("data/iOS/2/1")
+    fun getIosGankDeferred(): Deferred<BaseGank>
+
+    @GET("data/Android/2/1")
+    fun getAndroidGankDeferred(): Deferred<BaseGank>
+
+    @GET("data/iOS/2/1")
+    suspend fun getIosGankSuspend(): BaseGank
+
+    @GET("data/Android/2/1")
+    suspend fun getAndroidGankSuspend(): BaseGank
 }
 
 object ApiSource {
@@ -50,6 +63,7 @@ object ApiSource {
         .client(okhttpClient)
         .addConverterFactory(GsonConverterFactory.create())
         .addConverterFactory(ScalarsConverterFactory.create())
+//        .addCallAdapterFactory(CoroutineCallAdapterFactory())
         .build()
 
     @JvmField

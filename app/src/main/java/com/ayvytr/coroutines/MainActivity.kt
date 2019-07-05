@@ -47,11 +47,39 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
 //            queryGanksJack()
 //        }
 
+//        launch {
+//            try {
+//                val androidGankSuspend = ApiSource.apiService.getAndroidGankSuspend()
+//                androidGankSuspend.results!!
+//            } catch (e: Exception) {
+//            }
+//            try {
+//                val iosGankSuspend = ApiSource.apiService.getIosGankSuspend()
+//                iosGankSuspend.results!!
+//            } catch (e: Exception) {
+//            }
+//        }
+
+        //尝试封装
         launch {
-            val androidGankSuspend = ApiSource.apiService.getAndroidGankSuspend()
-            androidGankSuspend.results!!
-            val iosGankSuspend = ApiSource.apiService.getIosGankSuspend()
-            iosGankSuspend.results!!
+            val iosDeferred = async {
+                ApiSource.apiService.getIosGank().async().also {
+                    L.e(it)
+                }
+            }
+
+            val androidDeferred = async {
+                ApiSource.apiService.getAndroidGank().async().also {
+                    L.e(it)
+                }
+            }
+
+            val list = mutableListOf<Gank>().apply {
+//                addAll(iosDeferred.await()!!.results!!)
+//                addAll(androidDeferred.await()!!.results!!)
+            }
+
+            L.e(list)
         }
     }
 
@@ -62,12 +90,12 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
 
     suspend fun queryGanksJack(): List<Gank> {
 //        return withContext(Dispatchers.Main) {
-            val result = mutableListOf<Gank>().apply {
-                addAll(ApiSource.apiService.getAndroidGankDeferred().await().results!!)
-                addAll(ApiSource.apiService.getIosGankDeferred().await().results!!)
-            }
+        val result = mutableListOf<Gank>().apply {
+            addAll(ApiSource.apiService.getAndroidGankDeferred().await().results!!)
+            addAll(ApiSource.apiService.getIosGankDeferred().await().results!!)
+        }
 
-            return result
+        return result
 //        }
     }
 

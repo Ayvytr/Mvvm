@@ -1,6 +1,7 @@
 package com.ayvytr.coroutines
 
 import com.ayvytr.commonlibrary.bean.BaseGank
+import com.ayvytr.logger.L
 import com.ayvytr.okhttploginterceptor.LoggingInterceptor
 import com.ayvytr.okhttploginterceptor.LoggingLevel
 import kotlinx.coroutines.Deferred
@@ -63,7 +64,6 @@ object ApiSource {
         .client(okhttpClient)
         .addConverterFactory(GsonConverterFactory.create())
         .addConverterFactory(ScalarsConverterFactory.create())
-//        .addCallAdapterFactory(CoroutineCallAdapterFactory())
         .build()
 
     @JvmField
@@ -86,5 +86,29 @@ suspend fun <T> Call<T>.wait(): T {
             }
 
         })
+    }
+}
+
+suspend fun <T> Call<T>.async(): T? {
+    try {
+        return suspendCoroutine {
+            enqueue(object : Callback<T> {
+                override fun onFailure(call: Call<T>, t: Throwable) {
+                    it.resumeWithException(t)
+                }
+
+                override fun onResponse(call: Call<T>, response: Response<T>) {
+                    if (response.isSuccessful) {
+                        it.resume(response.body()!!)
+                    } else {
+                        it.resumeWithException(Throwable(response.toString()))
+                    }
+                }
+
+            })
+        }
+    } catch (e: Exception) {
+        L.e(e)
+        return null
     }
 }

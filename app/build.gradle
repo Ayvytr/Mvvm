@@ -51,4 +51,5 @@ dependencies {
     implementation deps.gson
     implementation deps.logger
     implementation deps.okhttploginterceptor
+    implementation deps.kotlin.ktx
 }

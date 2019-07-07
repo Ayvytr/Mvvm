@@ -760,66 +760,11 @@ fun main() = runBlocking {
 
 
 
-[协程指南](https://www.kotlincn.net/docs/reference/coroutines/coroutines-guide.html)
-
-[基础](https://www.kotlincn.net/docs/reference/coroutines/basics.html)
 
 
-
-取消与超时
-
-[通道](https://www.kotlincn.net/docs/reference/coroutines/channels.html)
-
-[组合挂起函数](https://www.kotlincn.net/docs/reference/coroutines/composing-suspending-functions.html)
-
-[协程上下文与调度器](https://www.kotlincn.net/docs/reference/coroutines/coroutine-context-and-dispatchers.html)
-
-[异常处理](https://www.kotlincn.net/docs/reference/coroutines/exception-handling.html)
-
-[Select 表达式](https://www.kotlincn.net/docs/reference/coroutines/select-expression.html)
-
-[共享的可变状态与并发](https://www.kotlincn.net/docs/reference/coroutines/shared-mutable-state-and-concurrency.html)
-
-
-
-工具
-
-
-
-演进
-
-
-
-常见问题
-
-- [完整 Kotlin 参考（PDF）](https://www.kotlincn.net/docs/kotlin-docs.pdf)
-- [完整 Kotlin 参考（字大PDF）](https://www.gitbook.com/download/pdf/book/hltj/kotlin-reference-chinese)
-- [完整 Kotlin 参考（ePUB）](https://www.gitbook.com/download/epub/book/hltj/kotlin-reference-chinese)
-- [完整 Kotlin 参考（Mobi）](https://www.gitbook.com/download/mobi/book/hltj/kotlin-reference-chinese)
-
- 
-
-[编辑本页](https://github.com/hltj/kotlinx.coroutines-cn/edit/master/docs/cancellation-and-timeouts.md)
-
-**目录**
-
-- 取消与超时
-  - [取消协程的执行](https://www.kotlincn.net/docs/reference/coroutines/cancellation-and-timeouts.html#取消协程的执行)
-  - [取消是协作的](https://www.kotlincn.net/docs/reference/coroutines/cancellation-and-timeouts.html#取消是协作的)
-  - [使计算代码可取消](https://www.kotlincn.net/docs/reference/coroutines/cancellation-and-timeouts.html#使计算代码可取消)
-  - [在 `finally` 中释放资源](https://www.kotlincn.net/docs/reference/coroutines/cancellation-and-timeouts.html#在-finally-中释放资源)
-  - [运行不能取消的代码块](https://www.kotlincn.net/docs/reference/coroutines/cancellation-and-timeouts.html#运行不能取消的代码块)
-  - [超时](https://www.kotlincn.net/docs/reference/coroutines/cancellation-and-timeouts.html#超时)
-
-## 取消与超时
-
-这一部分包含了协程的取消与超时。
-
-### 取消协程的执行
+### 取消与超时
 
 在一个长时间运行的应用程序中，你也许需要对你的后台协程进行细粒度的控制。 比如说，一个用户也许关闭了一个启动了协程的界面，那么现在协程的执行结果已经不再被需要了，这时，它应该是可以被取消的。 该 [launch](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/launch.html) 函数返回了一个可以被用来取消运行中的协程的 [Job](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-job/index.html)：
-
-
 
 
 
@@ -985,6 +930,140 @@ val result = withTimeoutOrNull(1300L) {
 }
 println("Result is $result")
 ```
+
+
+
+### 通道
+
+延期的值提供了一种便捷的方法使单个值在多个协程之间进行相互传输。 通道提供了一种在流中传输值的方法。
+
+### 通道基础
+
+一个 [Channel](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/-channel/index.html) 是一个和 `BlockingQueue` 非常相似的概念。其中一个不同是它代替了阻塞的 `put` 操作并提供了挂起的 [send](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/-send-channel/send.html)，还替代了阻塞的 `take` 操作并提供了挂起的 [receive](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/-receive-channel/receive.html)。
+
+
+
+```
+val channel = Channel<Int>()
+launch {
+    // 这里可能是消耗大量 CPU 运算的异步逻辑，我们将仅仅做 5 次整数的平方并发送
+    for (x in 1..5) channel.send(x * x)
+}
+// 这里我们打印了 5 次被接收的整数：
+repeat(5) { println(channel.receive()) }
+println("Done!")
+```
+
+
+
+### 关闭与迭代通道
+
+和队列不同，一个通道可以通过被关闭来表明没有更多的元素将会进入通道。 在接收者中可以定期的使用 `for` 循环来从通道中接收元素。
+
+从概念上来说，一个 [close](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/-send-channel/close.html) 操作就像向通道发送了一个特殊的关闭指令。 这个迭代停止就说明关闭指令已经被接收了。所以这里保证所有先前发送出去的元素都在通道关闭前被接收到。
+
+
+
+```
+val channel = Channel<Int>()
+launch {
+    for (x in 1..5) channel.send(x * x)
+    channel.close() // 我们结束发送
+}
+// 这里我们使用 `for` 循环来打印所有被接收到的元素（直到通道被关闭）
+for (y in channel) println(y)
+println("Done!")
+```
+
+
+
+### 构建通道生产者
+
+协程生成一系列元素的模式很常见。 这是 *生产者——消费者* 模式的一部分，并且经常能在并发的代码中看到它。 你可以将生产者抽象成一个函数，并且使通道作为它的参数，但这与必须从函数中返回结果的常识相违悖。
+
+这里有一个名为 [produce](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/produce.html) 的便捷的协程构建器，可以很容易的在生产者端正确工作， 并且我们使用扩展函数 [consumeEach](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/consume-each.html) 在消费者端替代 `for` 循环：
+
+```
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.*
+
+fun CoroutineScope.produceSquares(): ReceiveChannel<Int> = produce {
+    for (x in 1..5) send(x * x)
+}
+
+fun main() = runBlocking {
+    val squares = produceSquares()
+    squares.consumeEach { println(it) }
+    println("Done!")
+}
+```
+
+
+
+### 管道
+
+管道是一种一个协程在流中开始生产可能无穷多个元素的模式，并且另一个或多个协程开始消费这些流，做一些操作，并生产了一些额外的结果。 在下面的例子中，对这些数字仅仅做了平方操作：
+
+```
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.*
+
+fun main() = runBlocking {
+    val numbers = produceNumbers() // 从 1 开始生产整数
+    val squares = square(numbers) // 对整数做平方
+    for (i in 1..5) println(squares.receive()) // 打印前 5 个数字
+    println("Done!") // 我们的操作已经结束了
+    coroutineContext.cancelChildren() // 取消子协程
+}
+
+fun CoroutineScope.produceNumbers() = produce<Int> {
+    var x = 1
+    while (true) send(x++) // 从 1 开始的无限的整数流
+}
+
+fun CoroutineScope.square(numbers: ReceiveChannel<Int>): ReceiveChannel<Int> = produce {
+    for (x in numbers) send(x * x)
+}
+```
+
+**所有创建了协程的函数被定义在了 [CoroutineScope](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-scope/index.html) 的扩展上， 所以我们可以依靠[结构化并发](https://kotlinlang.org/docs/reference/coroutines/composing-suspending-functions.html#structured-concurrency-with-async)来确保没有常驻在我们的应用程序中的全局协程。**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

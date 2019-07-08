@@ -35,80 +35,7 @@ val bytes = 0b11010010_01101001_10010100_10010010
 
 **在 Java 平台数字是物理存储为 JVM 的原生类型，除非我们需要一个可空的引用（如 `Int?`）或泛型。 后者情况下会把数字装箱**
 
-[基础语法](https://www.kotlincn.net/docs/reference/basic-syntax.html)
-
-[习惯用法](https://www.kotlincn.net/docs/reference/idioms.html)
-
-[编码规范](https://www.kotlincn.net/docs/reference/coding-conventions.html)
-
-
-
-基础
-
-
-
-类与对象
-
-
-
-函数与 Lambda 表达式
-
-
-
-集合
-
-
-
-多平台程序设计
-
-
-
-其他
-
-
-
-核心库
-
-
-
-参考
-
-
-
-Java 互操作
-
-
-
-JavaScript
-
-
-
-原生
-
-
-
-协程
-
-
-
-工具
-
-
-
-演进
-
-
-
-常见问题
-
-- [完整 Kotlin 参考（PDF）](https://www.kotlincn.net/docs/kotlin-docs.pdf)
-- [完整 Kotlin 参考（字大PDF）](https://www.gitbook.com/download/pdf/book/hltj/kotlin-reference-chinese)
-- [完整 Kotlin 参考（ePUB）](https://www.gitbook.com/download/epub/book/hltj/kotlin-reference-chinese)
-- [完整 Kotlin 参考（Mobi）](https://www.gitbook.com/download/mobi/book/hltj/kotlin-reference-chinese)
-
- 
-
-[编辑本页](https://github.com/hltj/kotlin-web-site-cn/edit/master/pages/docs/reference/basic-types.md)
+[https://github.com/hltj/kotlin-web-site-cn/edit/master/pages/docs/reference/basic-types.md)
 
 # 基本类型
 
@@ -1028,37 +955,271 @@ fun CoroutineScope.square(numbers: ReceiveChannel<Int>): ReceiveChannel<Int> = p
 
 **所有创建了协程的函数被定义在了 [CoroutineScope](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-scope/index.html) 的扩展上， 所以我们可以依靠[结构化并发](https://kotlinlang.org/docs/reference/coroutines/composing-suspending-functions.html#structured-concurrency-with-async)来确保没有常驻在我们的应用程序中的全局协程。**
 
+### 组合挂起函数
+
+### 使用 async 并发
+
+如果 `doSomethingUsefulOne` 与 `doSomethingUsefulTwo` 之间没有依赖，并且我们想更快的得到结果，让它们进行 *并发* 吗？这就是 [async](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/async.html) 可以帮助我们的地方。
+
+在概念上，[async](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/async.html) 就类似于 [launch](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/launch.html)。它启动了一个单独的协程，这是一个轻量级的线程并与其它所有的协程一起并发的工作。不同之处在于 `launch` 返回一个 [Job](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-job/index.html) 并且不附带任何结果值，而 `async` 返回一个 [Deferred](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-deferred/index.html)—— 一个轻量级的非阻塞 future，  这代表了一个将会在稍后提供结果的 promise。你可以使用 `.await()`在一个延期的值上得到它的最终结果， 但是 `Deferred` 也是一个 `Job`，所以如果需要的话，你可以取消它。
+
+**注意，使用协程进行并发总是显式的。**
+
+```
+suspend fun doSomethingUsefulOne(): Int {
+    delay(1000L) // 假设我们在这里做了一些有用的事
+    return 13
+}
+
+suspend fun doSomethingUsefulTwo(): Int {
+    delay(1000L) // 假设我们在这里也做了一些有用的事
+    return 29
+}
+
+fun main() = runBlocking<Unit> {
+    val time = measureTimeMillis {
+        val one = async { doSomethingUsefulOne() }
+        val two = async { doSomethingUsefulTwo() }
+        println("The answer is ${one.await() + two.await()}")
+    }
+    println("Completed in $time ms")
+}
+```
 
 
 
+### 惰性启动的 async
+
+使用一个可选的参数 `start` 并传值 [CoroutineStart.LAZY](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-start/-l-a-z-y.html)，可以对 [async](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/async.html) 进行惰性操作。 只有当结果需要被 [await](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-deferred/await.html) 或者如果一个 [start](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-job/start.html) 函数被调用，协程才会被启动。
+
+**注意，如果我们在 `println` 中调用 [await](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-deferred/await.html) 并在个别协程上省略 [start](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-job/start.html)，则我们会得到顺序的行为作为 [await](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-deferred/await.html) 来启动协程的执行并且等待执行结束，这不是懒序列的预期用例。 当计算值涉及暂停函数时，该用例中使用 `async(start = CoroutineStart.LAZY)` 替换 标准库中的 `lazy` 函数。**
+
+### async 风格的函数
+
+我们可以定义异步风格的函数来 *异步* 的调用 `doSomethingUsefulOne` 和 `doSomethingUsefulTwo` 并使用 [async](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/async.html) 协程建造器并带有一个显式的 [GlobalScope](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-global-scope/index.html) 引用。 我们给这样的函数的名称中加上“Async”后缀来突出表明：事实上，它们只做异步计算并且需要使用延期的值来获得结果。
+
+```
+// somethingUsefulOneAsync 函数的返回值类型是 Deferred<Int>
+fun somethingUsefulOneAsync() = GlobalScope.async {
+    doSomethingUsefulOne()
+}
+
+// somethingUsefulTwoAsync 函数的返回值类型是 Deferred<Int>
+fun somethingUsefulTwoAsync() = GlobalScope.async {
+    doSomethingUsefulTwo()
+}
+```
 
 
 
+注意，这些 `xxxAsync` 函数**不是** *挂起* 函数。它们可以在任何地方被使用。 然而，它们总是在调用它们的代码中意味着异步（这里的意思是 *并发* ）执行。
+
+下面的例子展示了它们在协程的外面是如何使用的：
+
+```
+// 注意，在这个示例中我们在 `main` 函数的右边没有加上 `runBlocking`
+fun main() {
+    val time = measureTimeMillis {
+        // 我们可以在协程外面启动异步执行
+        val one = somethingUsefulOneAsync()
+        val two = somethingUsefulTwoAsync()
+        // 但是等待结果必须调用其它的挂起或者阻塞
+        // 当我们等待结果的时候，这里我们使用 `runBlocking { …… }` 来阻塞主线程
+        runBlocking {
+            println("The answer is ${one.await() + two.await()}")
+        }
+    }
+    println("Completed in $time ms")
+}
+```
+
+这种带有异步函数的编程风格仅供参考，因为这在其它编程语言中是一种受欢迎的风格。在 Kotlin 的协程中使用这种风格是**强烈不推荐**的， 原因如下所述。
+
+考虑一下如果 `val one = somethingUsefulOneAsync()` 这一行和 `one.await()` 表达式这里在代码中有逻辑错误， 并且程序抛出了异常以及程序在操作的过程中被中止，将会发生什么。 通常情况下，一个全局的异常处理者会捕获这个异常，将异常打印成日记并报告给开发者，但是反之该程序将会继续执行其它操作。但是这里我们的 `somethingUsefulOneAsync` 仍然在后台执行， 尽管如此，启动它的那次操作也会被终止。这个程序将不会进行结构化并发，如下一小节所示。
+
+### 使用 async 的结构化并发
+
+让我们使用[使用 async 的并发](https://www.kotlincn.net/docs/reference/coroutines/composing-suspending-functions.html#使用-async-的结构化并发)这一小节的例子并且提取出一个函数并发的调用 `doSomethingUsefulOne` 与 `doSomethingUsefulTwo` 并且返回它们两个的结果之和。 由于 [async](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/async.html) 被定义为了 [CoroutineScope](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/coroutine-scope.html) 上的扩展，我们需要将它写在作用域内，并且这是 [coroutineScope](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/coroutine-scope.html) 函数所提供的：
+
+```
+suspend fun concurrentSum(): Int = coroutineScope {
+    val one = async { doSomethingUsefulOne() }
+    val two = async { doSomethingUsefulTwo() }
+    one.await() + two.await()
+}
+```
+
+这种情况下，如果在 `concurrentSum` 函数内部发生了错误，并且它抛出了一个异常， 所有在作用域中启动的协程都将会被取消。
 
 
 
+```
+val time = measureTimeMillis {
+    println("The answer is ${concurrentSum()}")
+}
+println("Completed in $time ms")
+```
 
 
 
+从上面的 main 函数的输出可以看出，我们仍然可以同时执行这两个操作：
+
+```
+The answer is 42
+Completed in 1017 ms
+```
+
+取消始终通过协程的层次结构来进行传递：
+
+```
+import kotlinx.coroutines.*
+
+fun main() = runBlocking<Unit> {
+    try {
+        failedConcurrentSum()
+    } catch(e: ArithmeticException) {
+        println("Computation failed with ArithmeticException")
+    }
+}
+
+suspend fun failedConcurrentSum(): Int = coroutineScope {
+    val one = async<Int> { 
+        try {
+            delay(Long.MAX_VALUE) // 模拟一个长时间的运算
+            42
+        } finally {
+            println("First child was cancelled")
+        }
+    }
+    val two = async<Int> { 
+        println("Second child throws an exception")
+        throw ArithmeticException()
+    }
+    one.await() + two.await()
+}
+
+/**
+输出结果：
+Second child throws an exception
+First child was cancelled
+Computation failed with ArithmeticException
+*/
+```
 
 
 
+### 协程上下文与调度器
+
+协程总是运行在一些以 [CoroutineContext](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.coroutines/-coroutine-context/) 类型为代表的上下文中，它们被定义在了 Kotlin 的标准库里。
+
+协程上下文是各种不同元素的集合。其中主元素是协程中的 [Job](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-job/index.html)。
+
+### 非受限调度器 vs 受限调度器
+
+[Dispatchers.Unconfined](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-dispatchers/-unconfined.html) 协程调度器会在程序运行到第一个挂起点时，在调用者线程中启动。挂起后，它将在挂起函数执行的线程中恢复，恢复的线程完全取决于该挂起函数在哪个线程执行。非受限调度器适合协程不消耗 CPU 时间也不更新任何限于特定线程的共享数据（如 UI）的情境。
+
+另一方面，协程调度器默认承袭外部的 [CoroutineScope](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-scope/index.html) 的调度器。 特别是 [runBlocking](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/run-blocking.html) 的默认协程调度器仅限于调用者线程，因此承袭它将会把执行限制在该线程中， 并具有可预测的 FIFO 调度的效果。
 
 
 
+```
+import kotlinx.coroutines.*
+
+fun main() = runBlocking<Unit> {
+    launch(Dispatchers.Unconfined) { // 非受限的——将和主线程一起工作
+        println("Unconfined      : I'm working in thread ${Thread.currentThread().name}")
+        delay(500)
+        println("Unconfined      : After delay in thread ${Thread.currentThread().name}")
+    }
+    launch { // 父协程的上下文，主 runBlocking 协程
+        println("main runBlocking: I'm working in thread ${Thread.currentThread().name}")
+        delay(1000)
+        println("main runBlocking: After delay in thread ${Thread.currentThread().name}")
+    }    
+}
+```
+
+执行后的输出：
+
+```
+Unconfined      : I'm working in thread main
+main runBlocking: I'm working in thread main
+Unconfined      : After delay in thread kotlinx.coroutines.DefaultExecutor
+main runBlocking: After delay in thread main
+```
+
+因此，该协程从 `runBlocking {……}` 协程中承袭了上下文并在主线程中执行，同时使用非受限调度器的协程从被执行 [delay](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/delay.html) 函数的默认执行者线程中恢复。
+
+> 非受限的调度器是一种高级机制，可以在某些极端情况下提供帮助而不需要调度协程以便稍后执行或产生不希望的副作用， 因为某些操作必须立即在协程中执行。 非受限调度器不应该被用在通常的代码中。
+
+### 调试协程与线程
+
+协程可以在一个线程上挂起并在其它线程上恢复。 甚至一个单线程的调度器也是难以弄清楚协程在何时何地正在做什么事情。使用通常调试应用程序的方法是让线程在每一个日志文件的日志声明中打印线程的名字。这种特性在日志框架中是普遍受支持的。但是在使用协程时，单独的线程名称不会给出很多协程上下文信息，所以`kotlinx.coroutines` 包含了调试工具来让它更简单。
+
+使用 `-Dkotlinx.coroutines.debug` JVM 参数在打印Thread.currentThread().name时，输出的信息会带上协程上下文信息。
+
+ [CoroutineName](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-name/index.html) 上下文元素可以给线程像给函数命名一样命名。它在协程被执行且[调试模式](https://www.kotlincn.net/docs/reference/coroutines/coroutine-context-and-dispatchers.html#调试协程与线程)被开启时将显示线程的名字。
+
+### 上下文中的作业
+
+协程的 [Job](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-job/index.html) 是它上下文中的一部分。协程可以在它所属的上下文中使用 `coroutineContext[Job]` 表达式来取回它。
+
+### 子协程
+
+当一个协程被其它协程在 [CoroutineScope](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-scope/index.html) 中启动的时候， 它将通过 [CoroutineScope.coroutineContext](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-scope/coroutine-context.html) 来承袭上下文，并且这个新协程的 [Job](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-job/index.html) 将会成为父协程作业的 *子* 作业。当一个父协程被取消的时候，所有它的子协程也会被递归的取消。
+
+然而，当 [GlobalScope](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-global-scope/index.html) 被用来启动一个协程时，它与作用域无关且是独立被启动的。
+
+### 协程的取消
+
+当一个协程被其它协程在 [CoroutineScope](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-scope/index.html) 中启动的时候， 它将通过 [CoroutineScope.coroutineContext](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-scope/coroutine-context.html) 来承袭上下文，并且这个新协程的 [Job](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-job/index.html) 将会成为父协程作业的 *子* 作业。当一个父协程被取消的时候，所有它的子协程也会被递归的取消。**当 [GlobalScope](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-global-scope/index.html) 被用来启动一个协程时，它与作用域无关且是独立被启动的。**
+
+**一个父协程总是等待所有的子协程执行结束。父协程并不显式的跟踪所有子协程的启动以及不必使用 [Job.join](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-job/join.html) 在最后的时候等待它们。**
+
+### 组合上下文中的元素
+
+有时我们需要在协程上下文中定义多个元素。我们可以使用 `+` 操作符来实现。 比如说，我们可以显式指定一个调度器来启动协程并且同时显式指定一个命名：
+
+```
+launch(Dispatchers.Default + CoroutineName("test")) {
+    println("I'm working in thread ${Thread.currentThread().name}")
+}
+```
 
 
 
+### 协程作用域
+
+让我们把有关上下文、子协程以及作业的知识梳理一下。假设我们的应用程序中有一个在生命周期中的对象，但这个对象并不是协程。假如，我们写了一个 Android 应用程序并在上下文中启动了多个协程来为 Android activity 进行异步操作来拉取以及更新数据，或作动画等。当 activity 被销毁的时候这些协程必须被取消以防止内存泄漏。我们当然可以手动操作上下文以及作业来绑定 activity 与协程的生命周期，但是 `kotlinx.coroutines` 提供了一个抽象的封装：[CoroutineScope](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-scope/index.html)。 你应该已经熟悉了协程作用域，因为所有的协程构建器都被声明为扩展。
+
+我们通过创建一个 [CoroutineScope](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-scope/index.html) 实例来管理协程的生命周期，并使它与 activit 的生命周期相关联。`CoroutineScope` 可以通过 [CoroutineScope()](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-scope.html) 创建或者通过[MainScope()](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-main-scope.html) 工厂函数。前者创建了一个通用作用域，而后者为使用 [Dispatchers.Main](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-dispatchers/-main.html) 作为默认调度器的 UI 应用程序 创建作用域：
 
 
 
+```
+class Activity {
+    private val mainScope = MainScope()
+
+    fun destroy() {
+        mainScope.cancel()
+    }
+    // 继续运行……
+```
+
+或者，我们可以在这个 `Activity` 类中实现 [CoroutineScope](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-scope/index.html) 接口。最好的方法是使用具有默认工厂函数的委托。 我们也可以将所需的调度器与作用域合并（我们在这个示例中使用 [Dispatchers.Default](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-dispatchers/-default.html)）。
+
+```
+class Activity : CoroutineScope by CoroutineScope(Dispatchers.Default) {
+    // 继续运行……
+```
 
 
 
+### 线程局部数据
 
+有时能够传递一些线程局部的数据很方便，但是，对于协程来说，它们不受任何特定线程的约束，所以很难手动的去实现它并且不写出大量的样板代码。
 
-
-
+[`ThreadLocal`](https://docs.oracle.com/javase/8/docs/api/java/lang/ThreadLocal.html)， [asContextElement](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/java.lang.-thread-local/as-context-element.html) 扩展函数在这里会充当救兵。它创建了额外的上下文元素， 且保留给定 `ThreadLocal` 的值，并在每次协程切换其上下文时恢复它。
 
 
 

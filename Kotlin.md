@@ -1223,11 +1223,235 @@ class Activity : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
 
 
+### 异常的传播
+
+协程构建器有两种风格：自动的传播异常（[launch](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/launch.html) 以及 [actor](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/actor.html)） 或者将它们暴露给用户（[async](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/async.html) 以及 [produce](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/produce.html)）。 前者对待异常是不处理的，类似于 Java 的 `Thread.uncaughtExceptionHandler`， 而后者依赖用户来最终消耗异常，比如说，通过 [await](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-deferred/await.html) 或 [receive](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/-receive-channel/receive.html) （[produce](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/produce.html) 以及 [receive](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/-receive-channel/receive.html) 在[通道](https://www.kotlincn.net/docs/reference/coroutines/channels.html)中介绍过）。
+
+但是如果不想将所有的异常打印在控制台中呢？ [CoroutineExceptionHandler](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-exception-handler/index.html) 上下文元素被用来将通用的 `catch` 代码块用于在协程中自定义日志记录或异常处理。 它和使用 [`Thread.uncaughtExceptionHandler`](https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html#setUncaughtExceptionHandler(java.lang.Thread.UncaughtExceptionHandler)) 很相似。
+
+在 JVM 中可以重定义一个全局的异常处理者来将所有的协程通过 [`ServiceLoader`](https://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html) 注册到 [CoroutineExceptionHandler](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-exception-handler/index.html)。 全局异常处理者就如同 [`Thread.defaultUncaughtExceptionHandler`](https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html#setDefaultUncaughtExceptionHandler(java.lang.Thread.UncaughtExceptionHandler)) 一样，在没有更多的指定的异常处理者被注册的时候被使用。 在 Android 中， `uncaughtExceptionPreHandler` 被设置在全局协程异常处理者中。
+
+[CoroutineExceptionHandler](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-exception-handler/index.html) 仅在预计不会由用户处理的异常上调用， 所以在 [async](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/async.html) 构建器中注册它没有任何效果。
+
+### 取消与异常
+
+取消与异常紧密相关。协程内部使用 `CancellationException` 来进行取消，这个异常会被所有的处理者忽略，所以那些可以被 `catch` 代码块捕获的异常仅仅应该被用来作为额外调试信息的资源。 当一个协程在没有任何理由的情况下使用 [Job.cancel](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-job/cancel.html) 取消的时候，它会被终止，但是它不会取消它的父协程。 无理由取消是父协程取消其子协程而非取消其自身的机制。
 
 
 
+### CoroutineExceptionHandler
+
+ [CoroutineExceptionHandler](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-exception-handler/index.html) 上下文元素被用来将通用的 `catch` 代码块用于在协程中自定义日志记录或异常处理。 它和使用 [`Thread.uncaughtExceptionHandler`](https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html#setUncaughtExceptionHandler(java.lang.Thread.UncaughtExceptionHandler)) 很相似。
+
+在 JVM 中可以重定义一个全局的异常处理者来将所有的协程通过 [`ServiceLoader`](https://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html) 注册到 [CoroutineExceptionHandler](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-exception-handler/index.html)。 全局异常处理者就如同 [`Thread.defaultUncaughtExceptionHandler`](https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html#setDefaultUncaughtExceptionHandler(java.lang.Thread.UncaughtExceptionHandler)) 一样，在没有更多的指定的异常处理者被注册的时候被使用。 在 Android 中， `uncaughtExceptionPreHandler` 被设置在全局协程异常处理者中。
+
+[CoroutineExceptionHandler](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-exception-handler/index.html) 仅在预计不会由用户处理的异常上调用， 所以在 [async](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/async.html) 构建器中注册它没有任何效果。
 
 
 
+```
+val handler = CoroutineExceptionHandler { _, exception -> 
+        println("Caught $exception") 
+}
+val job = GlobalScope.launch(handler) {
+    throw AssertionError()
+}
+val deferred = GlobalScope.async(handler) {
+    throw ArithmeticException() // 没有打印任何东西，依赖用户去调用 deferred.await()
+}
+joinAll(job, deferred)
+```
 
 
+
+取消与异常紧密相关。协程内部使用 `CancellationException` 来进行取消，这个异常会被所有的处理者忽略，所以那些可以被 `catch` 代码块捕获的异常仅仅应该被用来作为额外调试信息的资源。 当一个协程在没有任何理由的情况下使用 [Job.cancel](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-job/cancel.html) 取消的时候，它会被终止，但是它不会取消它的父协程。 无理由取消是父协程取消其子协程而非取消其自身的机制。
+
+```
+val job = launch {
+    val child = launch {
+        try {
+            delay(Long.MAX_VALUE)
+        } finally {
+            println("Child is cancelled")
+        }
+    }
+    yield()
+    println("Cancelling child")
+    child.cancel()
+    child.join()
+    yield()
+    println("Parent is not cancelled")
+}
+job.join()
+```
+
+如果协程遇到除 `CancellationException` 以外的异常，它将取消具有该异常的父协程。 这种行为不能被覆盖，且它被用来提供一个稳定的协程层次结构来进行[结构化并发](https://github.com/Kotlin/kotlinx.coroutines/blob/master/docs/composing-suspending-functions.md#structured-concurrency-with-async)而无需依赖 [CoroutineExceptionHandler](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-exception-handler/index.html) 的实现。 且当所有的子协程被终止的时候，原本的异常被父协程所处理。
+
+### 监督作业
+
+[SupervisorJob](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-supervisor-job.html) 可以被用于这些目的。它类似于常规的 [Job](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-job.html)，唯一的取消异常将只会向下传播。
+
+### 监督作用域
+
+对于*作用域*的并发，[supervisorScope](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/supervisor-scope.html) 可以被用来替代 [coroutineScope](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/coroutine-scope.html) 来实现相同的目的。它只会单向的传播并且当子作业自身执行失败的时候将它们全部取消。它也会在所有的子作业执行结束前等待， 就像 [coroutineScope](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/coroutine-scope.html) 所做的那样。
+
+```
+import kotlin.coroutines.*
+import kotlinx.coroutines.*
+
+fun main() = runBlocking {
+    try {
+        supervisorScope {
+            val child = launch {
+                try {
+                    println("Child is sleeping")
+                    delay(Long.MAX_VALUE)
+                } finally {
+                    println("Child is cancelled")
+                }
+            }
+            // 使用 yield 来给我们的子作业一个机会来执行打印
+            yield()
+            println("Throwing exception from scope")
+            throw AssertionError()
+        }
+    } catch(e: AssertionError) {
+        println("Caught assertion error")
+    }
+}
+```
+
+### 监督协程中的异常
+
+常规的作业和监督作业之间的另一个重要区别是异常处理。 每一个子作业应该通过异常处理机制处理自身的异常。 这种差异来自于子作业的执行失败不会传播给它的父作业的事实。
+
+
+
+```
+import kotlin.coroutines.*
+import kotlinx.coroutines.*
+
+fun main() = runBlocking {
+    val handler = CoroutineExceptionHandler { _, exception -> 
+        println("Caught $exception") 
+    }
+    supervisorScope {
+        val child = launch(handler) {
+            println("Child throws an exception")
+            throw AssertionError()
+        }
+        println("Scope is completing")
+    }
+    println("Scope is completed")
+}
+```
+
+
+
+### 共享的可变状态与并发
+
+协程可用多线程调度器（比如默认的 [Dispatchers.Default](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-dispatchers/-default.html)）并发执行。这样就可以提出所有常见的并发问题。主要的问题是同步访问**共享的可变状态**。 协程领域对这个问题的一些解决方案类似于多线程领域中的解决方案， 但其它解决方案则是独一无二的。
+
+volatile不能解决协程并发问题。为 volatile 变量保证可线性化（这是“原子”的技术术语）读取和写入变量，但在大量动作（在我们的示例中即“递增”操作）发生时并不提供原子性。
+
+### 线程安全的数据结构
+
+一种对线程、协程都有效的常规解决方法，就是使用线程安全（也称为同步的、 可线性化、原子）的数据结构，它为需要在共享状态上执行的相应操作提供所有必需的同步处理。在简单的计数器场景中，我们可以使用具有 `incrementAndGet` 原子操作的 `AtomicInteger` 类：
+
+```
+var counter = AtomicInteger()
+
+fun main() = runBlocking {
+    withContext(Dispatchers.Default) {
+        massiveRun {
+            counter.incrementAndGet()
+        }
+    }
+    println("Counter = $counter")
+}
+```
+
+
+
+### 以细粒度限制线程
+
+*限制线程* 是解决共享可变状态问题的一种方案：对特定共享状态的所有访问权都限制在单个线程中。它通常应用于 UI 程序中：所有 UI 状态都局限于单个事件分发线程或应用主线程中。这在协程中很容易实现，通过使用一个单线程上下文：
+
+```
+val counterContext = newSingleThreadContext("CounterContext")
+var counter = 0
+
+fun main() = runBlocking {
+    withContext(Dispatchers.Default) {
+        massiveRun {
+            // 将每次自增限制在单线程上下文中
+            withContext(counterContext) {
+                counter++
+            }
+        }
+    }
+    println("Counter = $counter")
+}
+```
+
+这段代码运行非常缓慢，因为它进行了 *细粒度* 的线程限制。每个增量操作都得使用 [withContext(counterContext)] 块从多线程 [Dispatchers.Default](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-dispatchers/-default.html) 上下文切换到单线程上下文。
+
+### 以粗粒度限制线程
+
+在实践中，线程限制是在大段代码中执行的，例如：状态更新类业务逻辑中大部分都是限于单线程中。下面的示例演示了这种情况， 在单线程上下文中运行每个协程。
+
+
+
+```
+val counterContext = newSingleThreadContext("CounterContext")
+var counter = 0
+
+fun main() = runBlocking {
+    // 将一切都限制在单线程上下文中
+    withContext(counterContext) {
+        massiveRun {
+            counter++
+        }
+    }
+    println("Counter = $counter")
+}
+```
+
+
+
+### 互斥
+
+该问题的互斥解决方案：使用永远不会同时执行的 *关键代码块* 来保护共享状态的所有修改。在阻塞的世界中，你通常会为此目的使用 `synchronized` 或者 `ReentrantLock`。 在协程中的替代品叫做 [Mutex](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.sync/-mutex/index.html) 。它具有 [lock](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.sync/-mutex/lock.html) 和 [unlock](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.sync/-mutex/unlock.html) 方法， 可以隔离关键的部分。关键的区别在于 `Mutex.lock()` 是一个挂起函数，它不会阻塞线程。
+
+还有 [withLock](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.sync/with-lock.html) 扩展函数，可以方便的替代常用的 `mutex.lock(); try { …… } finally { mutex.unlock() }` 模式：
+
+```
+val mutex = Mutex()
+var counter = 0
+
+fun main() = runBlocking {
+    withContext(Dispatchers.Default) {
+        massiveRun {
+            // 用锁保护每次自增
+            mutex.withLock {
+                counter++
+            }
+        }
+    }
+    println("Counter = $counter")
+}
+```
+
+
+
+一个 [actor](https://en.wikipedia.org/wiki/Actor_model) 是由协程、 被限制并封装到该协程中的状态以及一个与其它协程通信的 *通道* 组合而成的一个实体。一个简单的 actor 可以简单的写成一个函数， 但是一个拥有复杂状态的 actor 更适合由类来表示。
+
+有一个 [actor](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/actor.html) 协程构建器，它可以方便地将 actor 的邮箱通道组合到其作用域中（用来接收消息）、组合发送 channel 与结果集对象，这样对 actor 的单个引用就可以作为其句柄持有。
+
+使用 actor 的第一步是定义一个 actor 要处理的消息类。 Kotlin 的[密封类](https://kotlinlang.org/docs/reference/sealed-classes.html)很适合这种场景。
+
+actor 本身执行时所处上下文（就正确性而言）无关紧要。一个 actor 是一个协程，而一个协程是按顺序执行的，因此将状态限制到特定协程可以解决共享可变状态的问题。实际上，actor 可以修改自己的私有状态， 但只能通过消息互相影响（避免任何锁定）。
+
+actor 在高负载下比锁更有效，因为在这种情况下它总是有工作要做，而且根本不需要切换到不同的上下文。
+
+> 注意，[actor](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/actor.html) 协程构建器是一个双重的 [produce](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/produce.html) 协程构建器。一个 actor 与它接收消息的通道相关联，而一个 producer 与它发送元素的通道相关联。

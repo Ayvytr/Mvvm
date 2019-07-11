@@ -1455,3 +1455,12 @@ actor 本身执行时所处上下文（就正确性而言）无关紧要。一�
 actor 在高负载下比锁更有效，因为在这种情况下它总是有工作要做，而且根本不需要切换到不同的上下文。
 
 > 注意，[actor](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/actor.html) 协程构建器是一个双重的 [produce](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/produce.html) 协程构建器。一个 actor 与它接收消息的通道相关联，而一个 producer 与它发送元素的通道相关联。
+
+
+
+## Kotlin 标准函数
+
+apply, also返回使用对象本身
+
+run with let 可返回任意类型的值
+

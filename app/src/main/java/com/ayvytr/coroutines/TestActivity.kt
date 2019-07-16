@@ -2,28 +2,66 @@ package com.ayvytr.coroutines
 
 import android.os.Bundle
 import com.ayvytr.commonlibrary.bean.Gank
-import com.ayvytr.logger.L
+import com.ayvytr.ktx.ui.hide
+import com.ayvytr.ktx.ui.show
+import kotlinx.android.synthetic.main.activity_test.*
 import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 
 class TestActivity : BaseActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun initView(savedInstanceState: Bundle?) {
         setContentView(R.layout.activity_test)
     }
 
     override fun initData(savedInstanceState: Bundle?) {
-        launch {
+        initData1()
+    }
+
+    override fun showError(error: String) {
+        super.showError(error)
+        tv_error.setText(error)
+    }
+
+    override fun showLoading() {
+        super.showLoading()
+        pb.show()
+    }
+
+    override fun hideLoading() {
+        super.hideLoading()
+        pb.hide()
+    }
+
+    private fun initData1() {
+//        launch {
+//            val iosGank = async {
+//                ApiSource.getInstance().apiService.getIosGank().async()
+//            }.await()
+//
+////                val androidGank = async {
+////                    ApiSource.apiService.getAndroidGank().async()
+////                }.await()
+//
+//
+//            val list = mutableListOf<Gank>().apply {
+//                iosGank?.results?.let {
+//                    addAll(it)
+//                }
+//                //                    androidGank.results?.let {
+//                //                        addAll(it)
+//                //                    }
+//            }
+//
+//            tv_value.text = list.size.toString()
+//        }
+
+        launchWithLoading {
             val iosGank = async {
-                ApiSource.apiService.getIosGank().async()
+                ApiSource.getInstance().apiService.getIosGank().async()
             }.await()
 
             val androidGank = async {
-                ApiSource.apiService.getAndroidGank().async()
+                ApiSource.getInstance().apiService.getIosGank().async()
             }.await()
 
 
@@ -36,7 +74,7 @@ class TestActivity : BaseActivity() {
                 }
             }
 
-            L.e(list)
+            tv_value.text = list.size.toString()
         }
     }
 }

@@ -6,7 +6,9 @@ import com.ayvytr.ktx.context.toast
 import kotlinx.coroutines.*
 import retrofit2.Call
 import retrofit2.Callback
+import retrofit2.HttpException
 import retrofit2.Response
+import java.net.UnknownHostException
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -42,6 +44,18 @@ open class BaseActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         cancel()
     }
 
+    protected open fun showLoading() {
+
+    }
+
+    protected open fun hideLoading() {
+
+    }
+
+    protected open fun showError(error: String) {
+        toast(error)
+    }
+
     suspend fun <T> Call<T>.async(): T? {
         try {
             return suspendCoroutine {
@@ -52,21 +66,32 @@ open class BaseActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
                     override fun onResponse(call: Call<T>, response: Response<T>) {
                         if (response.isSuccessful) {
-                            it.resume(response.body()!!)
+                            response.body()?.apply {
+                                it.resume(this)
+                            }
                         } else {
-                            it.resumeWithException(Throwable(response.toString()))
+                            it.resumeWithException(HttpException(response))
                         }
                     }
-
                 })
             }
-        } catch (e: Exception) {
-            showError(e.toString())
+
+        } catch (e: Throwable) {
+            when (e) {
+                is CancellationException -> return null
+                is UnknownHostException -> showError(e.message.toString())
+                is HttpException -> showError(e.toString())
+                else -> showError(e.toString())
+            }
             return null
         }
     }
 
-    private fun showError(error: String) {
-        toast(error)
+    fun launchWithLoading(block: suspend () -> Unit): Job {
+        return launch {
+            showLoading()
+            block()
+            hideLoading()
+        }
     }
 }

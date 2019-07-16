@@ -1,15 +1,14 @@
 package com.ayvytr.coroutines
 
+import android.content.Context
 import com.ayvytr.commonlibrary.bean.BaseGank
 import com.ayvytr.logger.L
 import com.ayvytr.okhttploginterceptor.LoggingInterceptor
 import com.ayvytr.okhttploginterceptor.LoggingLevel
 import kotlinx.coroutines.Deferred
+import okhttp3.Cache
 import okhttp3.OkHttpClient
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
+import retrofit2.*
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import retrofit2.http.GET
@@ -42,50 +41,54 @@ interface ApiService {
     suspend fun getAndroidGankSuspend(): BaseGank
 }
 
-object ApiSource {
-    @JvmField
-    val loggingInterceptor = LoggingInterceptor()
+class ApiSource private constructor(private var context: Context?) {
+    val apiService: ApiService
+    val okhttpClient: OkHttpClient
+    val retrofit: Retrofit
 
     init {
-        loggingInterceptor.level = LoggingLevel.SINGLE
+        L.e("init")
+        val builder = OkHttpClient.Builder()
+            .addInterceptor(LoggingInterceptor(LoggingLevel.SINGLE))
+            .addInterceptor(HttpCacheInterceptor(context, maxStaleSeconds = 3600 * 24))
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .writeTimeout(10, TimeUnit.SECONDS)
+        context?.also {
+            L.e(it.cacheDir)
+            builder.cache(Cache(it.cacheDir, 60 * 1024 * 1024))
+        }
+        okhttpClient = builder .build()
+        retrofit = Retrofit.Builder()
+            .baseUrl("http://gank.io/api/")
+            .client(okhttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .build()
+        apiService = retrofit.create(ApiService::class.java)
     }
 
-    @JvmField
-    val okhttpClient = OkHttpClient.Builder()
-        .addInterceptor(loggingInterceptor)
-        .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(10, TimeUnit.SECONDS)
-        .writeTimeout(10, TimeUnit.SECONDS)
-        .build()
+    fun init() {
+    }
 
-    @JvmField
-    val retrofit = Retrofit.Builder()
-        .baseUrl("http://gank.io/api/")
-        .client(okhttpClient)
-        .addConverterFactory(GsonConverterFactory.create())
-        .addConverterFactory(ScalarsConverterFactory.create())
-        .build()
+    companion object {
+        @Volatile
+        private var apiSource: ApiSource? = null
 
-    @JvmField
-    val apiService = retrofit.create(ApiService::class.java)
-}
+        fun getInstance(): ApiSource {
+            return getInstance(null)
+        }
 
-suspend fun <T> Call<T>.wait(): T {
-    return suspendCoroutine {
-        enqueue(object : Callback<T> {
-            override fun onFailure(call: Call<T>, t: Throwable) {
-                it.resumeWithException(t)
-            }
-
-            override fun onResponse(call: Call<T>, response: Response<T>) {
-                if (response.isSuccessful) {
-                    it.resume(response.body()!!)
-                } else {
-                    it.resumeWithException(Throwable(response.toString()))
+        fun getInstance(context: Context?): ApiSource {
+            if (apiSource == null) {
+                synchronized(ApiSource::class) {
+                    if (apiSource == null) {
+                        apiSource = ApiSource(context)
+                    }
                 }
             }
-
-        })
+            return apiSource!!
+        }
     }
 }
 
@@ -99,12 +102,13 @@ suspend fun <T> Call<T>.async(): T? {
 
                 override fun onResponse(call: Call<T>, response: Response<T>) {
                     if (response.isSuccessful) {
-                        it.resume(response.body()!!)
+                        response.body()?.let { r ->
+                            it.resume(r)
+                        }
                     } else {
-                        it.resumeWithException(Throwable(response.toString()))
+                        it.resumeWithException(HttpException(response))
                     }
                 }
-
             })
         }
     } catch (e: Exception) {

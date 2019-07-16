@@ -2,10 +2,10 @@ package com.ayvytr.coroutines
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import com.ayvytr.commonlibrary.bean.Gank
-import com.ayvytr.logger.L
-import kotlinx.coroutines.*
-import java.util.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlin.coroutines.CoroutineContext
 
 class MainActivity : AppCompatActivity(), CoroutineScope {
@@ -60,96 +60,92 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
 //            }
 //        }
 
-        //尝试封装
-        launch {
-            val iosDeferred = async {
-                ApiSource.apiService.getIosGank().async().also {
-                    L.e(it)
-                }
-            }
-
-            val androidDeferred = async {
-                ApiSource.apiService.getAndroidGank().async().also {
-                    L.e(it)
-                }
-            }
-
-            val list = mutableListOf<Gank>().apply {
-//                addAll(iosDeferred.await()!!.results!!)
-//                addAll(androidDeferred.await()!!.results!!)
-            }
-
-            L.e(list)
-        }
-    }
-
-    private fun queryGanksSuspend() {
-        mutableListOf<Gank>().apply {
-        }
-    }
-
-    suspend fun queryGanksJack(): List<Gank> {
-//        return withContext(Dispatchers.Main) {
-        val result = mutableListOf<Gank>().apply {
-            addAll(ApiSource.apiService.getAndroidGankDeferred().await().results!!)
-            addAll(ApiSource.apiService.getIosGankDeferred().await().results!!)
-        }
-
-        return result
+//        //尝试封装
+//        launch {
+//            val iosDeferred = async {
+//                ApiSource.apiService.getIosGank().async().also {
+//                    L.e(it)
+//                }
+//            }
+//
+//            val androidDeferred = async {
+//                ApiSource.apiService.getAndroidGank().async().also {
+//                    L.e(it)
+//                }
+//            }
+//
+//            val list = mutableListOf<Gank>().apply {
+////                addAll(iosDeferred.await()!!.results!!)
+////                addAll(androidDeferred.await()!!.results!!)
+//            }
+//
+//            L.e(list)
 //        }
     }
 
-    suspend fun queryGanksAsync(): List<Gank> {
-        return withContext(Dispatchers.Main) {
-            try {
-                val androidDeferred = async {
-                    L.e(Calendar.getInstance().time, Calendar.getInstance().get(Calendar.MILLISECOND))
-                    val baseGank = ApiSource.apiService.getAndroidGank().wait()
-                    L.e(Calendar.getInstance().time, Calendar.getInstance().get(Calendar.MILLISECOND))
-                    baseGank
-                }
-                val iosDeferred = async {
-                    L.e(Calendar.getInstance().time, Calendar.getInstance().get(Calendar.MILLISECOND))
-                    val baseGank = ApiSource.apiService.getIosGank().wait()
-                    L.e(Calendar.getInstance().time, Calendar.getInstance().get(Calendar.MILLISECOND))
-                    baseGank
-                }
 
-                val androidResult = androidDeferred.await().results
-                val iosResult = iosDeferred.await().results
+//    suspend fun queryGanksJack(): List<Gank> {
+////        return withContext(Dispatchers.Main) {
+//        val result = mutableListOf<Gank>().apply {
+//            addAll(ApiSource.apiService.getAndroidGankDeferred().await().results!!)
+//            addAll(ApiSource.apiService.getIosGankDeferred().await().results!!)
+//        }
+//
+//        return result
+////        }
+//    }
 
-                val result = mutableListOf<Gank>().apply {
-                    addAll(androidResult!!)
-                    addAll(iosResult!!)
-                }
+//    suspend fun queryGanksAsync(): List<Gank> {
+//        return withContext(Dispatchers.Main) {
+//            try {
+//                val androidDeferred = async {
+//                    L.e(Calendar.getInstance().time, Calendar.getInstance().get(Calendar.MILLISECOND))
+//                    val baseGank = ApiSource.apiService.getAndroidGank().wait()
+//                    L.e(Calendar.getInstance().time, Calendar.getInstance().get(Calendar.MILLISECOND))
+//                    baseGank
+//                }
+//                val iosDeferred = async {
+//                    L.e(Calendar.getInstance().time, Calendar.getInstance().get(Calendar.MILLISECOND))
+//                    val baseGank = ApiSource.apiService.getIosGank().wait()
+//                    L.e(Calendar.getInstance().time, Calendar.getInstance().get(Calendar.MILLISECOND))
+//                    baseGank
+//                }
+//
+//                val androidResult = androidDeferred.await().results
+//                val iosResult = iosDeferred.await().results
+//
+//                val result = mutableListOf<Gank>().apply {
+//                    addAll(androidResult!!)
+//                    addAll(iosResult!!)
+//                }
+//
+//                result
+//            } catch (e: Throwable) {
+//                e.printStackTrace()
+//                throw e
+//            }
+//        }
+//    }
 
-                result
-            } catch (e: Throwable) {
-                e.printStackTrace()
-                throw e
-            }
-        }
-    }
-
-    suspend fun queryGanksOrderly(): List<Gank> {
-        return try {
-            L.e(Calendar.getInstance().time, Calendar.getInstance().get(Calendar.MILLISECOND))
-            val androidResult = ApiSource.apiService.getAndroidGank().wait()
-            L.e(Calendar.getInstance().time, Calendar.getInstance().get(Calendar.MILLISECOND))
-            val iosResult = ApiSource.apiService.getIosGank().wait()
-            L.e(Calendar.getInstance().time, Calendar.getInstance().get(Calendar.MILLISECOND))
-
-            val result = mutableListOf<Gank>().apply {
-                addAll(androidResult.results!!)
-                addAll(iosResult.results!!)
-            }
-
-            return result
-        } catch (e: Throwable) {
-            e.printStackTrace()
-            throw e
-        }
-    }
+//    suspend fun queryGanksOrderly(): List<Gank> {
+//        return try {
+//            L.e(Calendar.getInstance().time, Calendar.getInstance().get(Calendar.MILLISECOND))
+//            val androidResult = ApiSource.apiService.getAndroidGank().wait()
+//            L.e(Calendar.getInstance().time, Calendar.getInstance().get(Calendar.MILLISECOND))
+//            val iosResult = ApiSource.apiService.getIosGank().wait()
+//            L.e(Calendar.getInstance().time, Calendar.getInstance().get(Calendar.MILLISECOND))
+//
+//            val result = mutableListOf<Gank>().apply {
+//                addAll(androidResult.results!!)
+//                addAll(iosResult.results!!)
+//            }
+//
+//            return result
+//        } catch (e: Throwable) {
+//            e.printStackTrace()
+//            throw e
+//        }
+//    }
 
     override fun onDestroy() {
         super.onDestroy()

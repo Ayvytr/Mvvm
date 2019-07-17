@@ -58,7 +58,7 @@ class ApiSource private constructor(private var context: Context?) {
             L.e(it.cacheDir)
             builder.cache(Cache(it.cacheDir, 60 * 1024 * 1024))
         }
-        okhttpClient = builder .build()
+        okhttpClient = builder.build()
         retrofit = Retrofit.Builder()
             .baseUrl("http://gank.io/api/")
             .client(okhttpClient)
@@ -92,27 +92,23 @@ class ApiSource private constructor(private var context: Context?) {
     }
 }
 
-suspend fun <T> Call<T>.async(): T? {
-    try {
-        return suspendCoroutine {
-            enqueue(object : Callback<T> {
-                override fun onFailure(call: Call<T>, t: Throwable) {
-                    it.resumeWithException(t)
-                }
+suspend fun <T> Call<T>.async(): T {
+    return suspendCoroutine {
+        enqueue(object : Callback<T> {
+            override fun onFailure(call: Call<T>, t: Throwable) {
+                it.resumeWithException(t)
+            }
 
-                override fun onResponse(call: Call<T>, response: Response<T>) {
-                    if (response.isSuccessful) {
-                        response.body()?.let { r ->
-                            it.resume(r)
-                        }
-                    } else {
-                        it.resumeWithException(HttpException(response))
+            override fun onResponse(call: Call<T>, response: Response<T>) {
+                if (response.isSuccessful) {
+                    //response.body=null的情况未处理，如果有问题后续再进行修改
+                    response.body()?.apply {
+                        it.resume(this)
                     }
+                } else {
+                    it.resumeWithException(HttpException(response))
                 }
-            })
-        }
-    } catch (e: Exception) {
-        L.e(e)
-        return null
+            }
+        })
     }
 }

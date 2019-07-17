@@ -1,5 +1,15 @@
-# Coroutines
-Kotlin协程
+# Android Coroutines Library   [![jCenter](https://img.shields.io/badge/jCenter-0.1.0-red.svg)](https://bintray.com/ayvytr/maven/[base-coroutine-activity](https://bintray.com/ayvytr/maven/base-coroutine-activity)/_latestVersion)
+
+
+
+BaseCoroutineActivity and BaseCoroutineFragment for Android.
+
+## Use
+
+​	implementation 'com.ayvytr:base-coroutine-activity:0.1.0'
+
+
+  
 
 
 
@@ -7,9 +17,9 @@ Kotlin协程
 
 [Android中用Kotlin Coroutine(协程)和Retrofit进行网络请求和取消请求](https://blog.csdn.net/huyongl1989/article/details/89456753)
 
-
-
 [Retrofit 2.6.0 ! 更快捷的协程体验 ！](https://blog.csdn.net/sunluyao_/article/details/92799767)
 
 [使用协程进行 UI 编程指南](https://github.com/hltj/kotlinx.coroutines-cn/blob/master/ui/coroutines-guide-ui.md)
+
+
 

@@ -1,15 +1,54 @@
-# Android Coroutines Library   [![jCenter](https://img.shields.io/badge/jCenter-0.1.0-red.svg)](https://bintray.com/ayvytr/maven/[base-coroutine-activity](https://bintray.com/ayvytr/maven/base-coroutine-activity)/_latestVersion)
-
+# Android Coroutines Library  [![](https://img.shields.io/badge/jCenter-0.1.0-red.svg)](https://bintray.com/ayvytr/maven/base-coroutine-activity/_latestVersion)
 
 
 BaseCoroutineActivity and BaseCoroutineFragment for Android.
 
-## Use
+## Import
 
 ​	implementation 'com.ayvytr:base-coroutine-activity:0.1.0'
 
+## Use
 
-  
+```kotlin
+//Activity:
+class YourActivity : BaseCoroutineActivity() {
+	override fun initData(savedInstanceState: Bundle?) {
+		   launchWithLoading {
+            	//Your network request. You don't need to control loading.
+            }
+            
+            //Or
+            launch {
+            	//Your network request. You need to control loading.
+            }
+        }
+	}
+}
+
+```
+
+
+
+```kotlin
+//Fragment:
+class YourFragment : BaseCoroutineFragment() {
+	override fun initData(savedInstanceState: Bundle?) {
+		   launchWithLoading {
+            	//Your network request. You don't need to control loading.
+            }
+            
+            //Or
+            launch {
+            	//Your network request. You need to control loading.
+            }
+        }
+	}
+}
+
+```
+
+
+
 
 
 

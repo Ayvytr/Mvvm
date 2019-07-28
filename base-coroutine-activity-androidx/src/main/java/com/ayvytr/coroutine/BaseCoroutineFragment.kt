@@ -1,22 +1,20 @@
 package com.ayvytr.coroutine
 
 import android.os.Bundle
-import android.support.annotation.StringRes
-import android.support.v7.app.AppCompatActivity
+import android.view.View
 import android.widget.Toast
+import androidx.annotation.StringRes
+import androidx.fragment.app.Fragment
 import kotlinx.coroutines.*
 import java.util.concurrent.CancellationException
 import kotlin.coroutines.CoroutineContext
 
 /**
- * Base Activity with coroutine, used to inherit it. You can launch coroutine with [launchWithLoading] or [launch], and
+ * Base Fragment with coroutine, used to inherit it. You can launch coroutine with [launchWithLoading] or [launch], and
  * don't need to call [Job.cancel].
  * @author Ayvytr
  */
-open class BaseCoroutineActivity : AppCompatActivity(), CoroutineScope by MainScope() {
-    /**
-     * Must use field of [Job].
-     */
+open class BaseCoroutineFragment : Fragment(), CoroutineScope by MainScope() {
     private val mBaseJob = Job()
 
     override val coroutineContext: CoroutineContext
@@ -25,6 +23,10 @@ open class BaseCoroutineActivity : AppCompatActivity(), CoroutineScope by MainSc
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         initExtra(savedInstanceState)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         initView(savedInstanceState)
         initData(savedInstanceState)
     }
@@ -59,7 +61,7 @@ open class BaseCoroutineActivity : AppCompatActivity(), CoroutineScope by MainSc
     }
 
     protected open fun showError(error: String) {
-        Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
     }
 
     /**

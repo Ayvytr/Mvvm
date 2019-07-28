@@ -51,7 +51,7 @@ kotlin.anko = "org.jetbrains.anko:anko:$versions.anko"
 kotlin.anko_commons = "org.jetbrains.anko:anko-commons:$versions.anko"
 kotlin.rxlifecycle_android = 'com.trello.rxlifecycle2:rxlifecycle-android-lifecycle-kotlin:2.2.2'
 kotlin.mvp_rxlifecycle_kotlin = 'com.ayvytr:mvp-rxlifecycle-kotlin:1.3.3'
-kotlin.ktx = "com.ayvytr:ktx:2.3.1"
+kotlin.ktx = "com.ayvytr:ktx:2.3.0"
 
 deps.kotlin = kotlin
 

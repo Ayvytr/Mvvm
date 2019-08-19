@@ -1,7 +1,9 @@
 package com.ayvytr.coroutine
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
@@ -14,15 +16,19 @@ import kotlin.coroutines.CoroutineContext
  * don't need to call [Job.cancel].
  * @author Ayvytr
  */
-open class BaseCoroutineFragment : Fragment(), CoroutineScope by MainScope() {
+open class BaseCoroutineFragment : Fragment(), CoroutineScope by MainScope(), OnBackPressedListener {
     private val mBaseJob = Job()
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + mBaseJob
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        initExtra(savedInstanceState)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val contentView = getContentView()
+        if (contentView > 0) {
+            return layoutInflater.inflate(contentView, container, false)
+        }
+
+        return super.onCreateView(inflater, container, savedInstanceState)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -31,10 +37,8 @@ open class BaseCoroutineFragment : Fragment(), CoroutineScope by MainScope() {
         initData(savedInstanceState)
     }
 
-    /**
-     * Used to get extra data.
-     */
-    open fun initExtra(savedInstanceState: Bundle?) {
+    open fun getContentView(): Int {
+        return 0
     }
 
     open fun initView(savedInstanceState: Bundle?) {
@@ -95,5 +99,10 @@ open class BaseCoroutineFragment : Fragment(), CoroutineScope by MainScope() {
      * @see [Throwable.toVisibleString]
      */
     protected open fun getExceptionString(e: Exception) = e.toVisibleString()
+
+    override fun onBackPressed(): Boolean {
+        return false
+    }
+
 }
 

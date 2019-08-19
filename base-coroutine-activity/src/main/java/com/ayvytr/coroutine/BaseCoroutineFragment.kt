@@ -1,55 +1,45 @@
 package com.ayvytr.coroutine
 
 import android.os.Bundle
+import android.support.annotation.StringRes
+import android.support.v4.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.annotation.StringRes
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
 import kotlinx.coroutines.*
 import java.util.concurrent.CancellationException
 import kotlin.coroutines.CoroutineContext
 
-interface BaseObserver : LifecycleObserver {
-    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-    fun onCreated()
-}
-
 /**
- * Base Activity with coroutine, used to inherit it. You can launch coroutine with [launchWithLoading] or [launch], and
+ * Base Fragment with coroutine, used to inherit it. You can launch coroutine with [launchWithLoading] or [launch], and
  * don't need to call [Job.cancel].
  * @author Ayvytr
  */
-open class BaseCoroutineActivity : AppCompatActivity(), CoroutineScope by MainScope() {
-
-    /**
-     * Must use field of [Job].
-     */
+open class BaseCoroutineFragment : Fragment(), CoroutineScope by MainScope(), OnBackPressedListener {
     private val mBaseJob = Job()
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + mBaseJob
 
-    lateinit var baseObserver: BaseObserver
-
-    protected val backPressedList = mutableListOf<OnBackPressedListener>()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-//        val contentView = getContentView()
-//        if (contentView > 0) {
-//            setContentView(contentView)
-//        }
-        baseObserver = object : BaseObserver {
-            override fun onCreated() {
-                initView(savedInstanceState)
-                initData(savedInstanceState)
-            }
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val contentView = getContentView()
+        if (contentView > 0) {
+            return layoutInflater.inflate(contentView, container, false)
         }
-        lifecycle.addObserver(baseObserver)
+
+        return super.onCreateView(inflater, container, savedInstanceState)
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        initView(savedInstanceState)
+        initData(savedInstanceState)
+    }
+
+    open fun getContentView(): Int {
+        return 0
+    }
 
     open fun initView(savedInstanceState: Bundle?) {
     }
@@ -61,7 +51,6 @@ open class BaseCoroutineActivity : AppCompatActivity(), CoroutineScope by MainSc
     override fun onDestroy() {
         super.onDestroy()
         cancel()
-        lifecycle.removeObserver(baseObserver)
     }
 
     protected open fun showLoading() {
@@ -76,7 +65,7 @@ open class BaseCoroutineActivity : AppCompatActivity(), CoroutineScope by MainSc
     }
 
     protected open fun showError(error: String) {
-        Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
     }
 
     /**
@@ -111,14 +100,9 @@ open class BaseCoroutineActivity : AppCompatActivity(), CoroutineScope by MainSc
      */
     protected open fun getExceptionString(e: Exception) = e.toVisibleString()
 
-    override fun onBackPressed() {
-        backPressedList.forEach {
-            if (it.onBackPressed()) {
-                return
-            }
-        }
-
-        super.onBackPressed()
+    override fun onBackPressed(): Boolean {
+        return false
     }
+
 }
 

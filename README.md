@@ -1,11 +1,14 @@
-# Android Coroutines Library  [![](https://img.shields.io/badge/jCenter-0.1.0-red.svg)](https://bintray.com/ayvytr/maven/base-coroutine-activity/_latestVersion)
+# Android Coroutines Library  [![](https://img.shields.io/badge/jCenter-0.2.0-red.svg)](https://bintray.com/ayvytr/maven/base-coroutine-activity/_latestVersion)
 
 
 BaseCoroutineActivity and BaseCoroutineFragment for Android.
 
 ## Import
 
-​	implementation 'com.ayvytr:base-coroutine-activity:0.1.0'
+android
+​	implementation 'com.ayvytr:base-coroutine-activity:0.2.0'
+androidx
+​	implementation 'com.ayvytr:base-coroutine-activity-androidx:0.2.0'
 
 ## Use
 

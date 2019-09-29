@@ -7,8 +7,10 @@ BaseCoroutineActivity and BaseCoroutineFragment for Android.
 
 android
 ​	implementation 'com.ayvytr:base-coroutine-activity:0.2.0'
+
 androidx
 ​	implementation 'com.ayvytr:base-coroutine-activity-androidx:0.2.0'
+
 
 ## Use
 

@@ -6,13 +6,17 @@ BaseCoroutineActivity and BaseCoroutineFragment for Android.
 ## Import
 
 android
+
 ​	implementation 'com.ayvytr:base-coroutine-activity:0.2.1'
+
 androidx
+
 ​	implementation 'com.ayvytr:base-coroutine-activity-androidx:0.2.1'
 
 ## ChangeLog
 * 0.2.1
     放弃OnBackPressed接口，因为没有完备的管理回退栈机制，仅仅使用接口无法根本解决问题
+
 
 ## Use
 

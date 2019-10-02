@@ -8,7 +8,6 @@ import android.support.annotation.StringRes
 import android.support.v7.app.AppCompatActivity
 import android.widget.Toast
 import kotlinx.coroutines.*
-import java.util.concurrent.CancellationException
 import kotlin.coroutines.CoroutineContext
 
 interface BaseObserver : LifecycleObserver {
@@ -32,8 +31,6 @@ open class BaseCoroutineActivity : AppCompatActivity(), CoroutineScope by MainSc
         get() = Dispatchers.Main + mBaseJob
 
     lateinit var baseObserver: BaseObserver
-
-    protected val backPressedList = mutableListOf<OnBackPressedListener>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -111,14 +108,5 @@ open class BaseCoroutineActivity : AppCompatActivity(), CoroutineScope by MainSc
      */
     protected open fun getExceptionString(e: Exception) = e.toVisibleString()
 
-    override fun onBackPressed() {
-        backPressedList.forEach {
-            if (it.onBackPressed()) {
-                return
-            }
-        }
-
-        super.onBackPressed()
-    }
 }
 

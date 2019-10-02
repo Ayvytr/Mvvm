@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import kotlinx.coroutines.*
-import java.util.concurrent.CancellationException
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -16,13 +15,17 @@ import kotlin.coroutines.CoroutineContext
  * don't need to call [Job.cancel].
  * @author Ayvytr
  */
-open class BaseCoroutineFragment : Fragment(), CoroutineScope by MainScope(), OnBackPressedListener {
+open class BaseCoroutineFragment : Fragment(), CoroutineScope by MainScope() {
     private val mBaseJob = Job()
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + mBaseJob
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         val contentView = getContentView()
         if (contentView > 0) {
             return layoutInflater.inflate(contentView, container, false)
@@ -99,10 +102,6 @@ open class BaseCoroutineFragment : Fragment(), CoroutineScope by MainScope(), On
      * @see [Throwable.toVisibleString]
      */
     protected open fun getExceptionString(e: Exception) = e.toVisibleString()
-
-    override fun onBackPressed(): Boolean {
-        return false
-    }
 
 }
 

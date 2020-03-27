@@ -18,6 +18,18 @@ androidx
     放弃OnBackPressed接口，因为没有完备的管理回退栈机制，仅仅使用接口无法根本解决问题
 
 
+### Base adapter
+
+    implementation 'com.ayvytr:base-adapter:1.4.2'
+
+### Network
+
+    //2.1.0 支持OkHttp 4.x，后续直接以OkHttp 4.x为基础进行更新
+    implementation 'com.ayvytr:network:2.1.0'
+    //2.0.0 支持OkHttp 3.x
+    implementation 'com.ayvytr:network:2.0.0'
+
+
 ## Use
 
 ```kotlin

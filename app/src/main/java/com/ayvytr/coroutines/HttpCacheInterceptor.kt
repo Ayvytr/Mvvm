@@ -21,7 +21,7 @@ class HttpCacheInterceptor @JvmOverloads constructor(
          * @see okhttp3.internal.cache.CacheInterceptor
          */
         val response = chain.proceed(chain.request().newBuilder().build())
-        if (response.code() == 504) {
+        if (response.code == 504) {
             return chain.proceed(chain.request())
         }
 

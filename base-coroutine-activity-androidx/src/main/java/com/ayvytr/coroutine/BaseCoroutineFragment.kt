@@ -101,7 +101,7 @@ open class BaseCoroutineFragment : Fragment(), CoroutineScope by MainScope() {
      * @param e Exception
      * @see [Throwable.toVisibleString]
      */
-    protected open fun getExceptionString(e: Exception) = e.toVisibleString()
+    protected open fun getExceptionString(e: Exception) = e.toString()
 
 }
 

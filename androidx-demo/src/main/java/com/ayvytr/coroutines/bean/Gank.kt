@@ -1,4 +1,4 @@
-package com.ayvytr.commonlibrary.bean
+package com.ayvytr.coroutines.bean
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize

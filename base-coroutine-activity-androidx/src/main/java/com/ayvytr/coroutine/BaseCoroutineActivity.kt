@@ -61,11 +61,8 @@ open class BaseCoroutineActivity : AppCompatActivity(), CoroutineScope by MainSc
         lifecycle.removeObserver(baseObserver)
     }
 
-    protected open fun showLoading() {
-    }
+    protected open fun showLoading(isShowLoading: Boolean = true) {
 
-
-    protected open fun hideLoading() {
     }
 
     protected open fun showError(@StringRes strId: Int) {
@@ -95,7 +92,7 @@ open class BaseCoroutineActivity : AppCompatActivity(), CoroutineScope by MainSc
                     }
                 }
             }
-            hideLoading()
+            showLoading(false)
         }
     }
 
@@ -106,7 +103,7 @@ open class BaseCoroutineActivity : AppCompatActivity(), CoroutineScope by MainSc
      * @param e Exception
      * @see [Throwable.toVisibleString]
      */
-    protected open fun getExceptionString(e: Exception) = e.toVisibleString()
+    protected open fun getExceptionString(e: Exception) = e.toString()
 
 }
 

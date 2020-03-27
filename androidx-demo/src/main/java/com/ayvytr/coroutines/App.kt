@@ -1,6 +1,7 @@
 package com.ayvytr.coroutines
 
 import android.app.Application
+import com.ayvytr.network.ApiClient
 
 /**
  * @author admin
@@ -9,6 +10,6 @@ import android.app.Application
 class App: Application() {
     override fun onCreate() {
         super.onCreate()
-        ApiSource.getInstance(applicationContext).init()
+        ApiClient.getInstance().init("https://gank.io/api/", cache = null)
     }
 }

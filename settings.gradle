@@ -1,1 +1,1 @@
-include ':app', ':base-coroutine-activity-androidx', ':androidx-demo', 'base-coroutine-activity'
+include ':base-coroutine-activity-androidx', ':androidx-app', 'base-coroutine-activity'

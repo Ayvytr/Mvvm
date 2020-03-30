@@ -65,17 +65,16 @@ open class BaseCoroutineActivity : AppCompatActivity(), CoroutineScope by MainSc
 
     }
 
-    protected open fun showError(@StringRes strId: Int) {
-        showError(getString(strId))
+    protected open fun showMessage(@StringRes strId: Int) {
+        showMessage(getString(strId))
     }
 
-    protected open fun showError(error: String) {
+    protected open fun showMessage(error: String) {
         Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
     }
 
     /**
-     * Launch coroutine with [showLoading], [block] and [hideLoading], if you don't need [showLoading] or [hideLoading],
-     * just call [launch].
+     * Launch coroutine with [showLoading], [block] , if you don't need, just call [launch].
      */
     fun launchWithLoading(block: suspend () -> Unit) {
         launch {
@@ -88,7 +87,7 @@ open class BaseCoroutineActivity : AppCompatActivity(), CoroutineScope by MainSc
                     is CancellationException -> {
                     }
                     else -> {
-                        showError(getExceptionString(e))
+                        showMessage(getExceptionString(e))
                     }
                 }
             }

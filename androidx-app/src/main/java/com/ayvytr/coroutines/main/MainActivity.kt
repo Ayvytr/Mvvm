@@ -45,7 +45,7 @@ class MainActivity : BaseCoroutineActivity() {
             L.e("errorLiveData", it)
             pb.hide()
             tv_error.text = it.errorMessage
-            showError(it.errorMessage!!)
+            showMessage(it.errorMessage!!)
         })
 
         btn_get_data.setOnClickListener {

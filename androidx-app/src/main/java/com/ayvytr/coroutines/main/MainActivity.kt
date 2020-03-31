@@ -26,22 +26,16 @@ class MainActivity : BaseCoroutineActivity<MainViewModel>() {
     }
 
     override fun initData(savedInstanceState: Bundle?) {
-        mViewModel.androidGankLiveData.observe(this, Observer {
-            tv_value.text = it.toString()
-        })
         mViewModel.androidAndIosLiveData.observe(this, Observer {
             tv_value.text = it.toString()
             tv_error.text = null
         })
 
         btn_get_data.setOnClickListener {
-//            mainViewModel.getAndroidGank()
             mViewModel.getAndroidAndIos()
         }
 
-//        mainViewModel.getAndroidGank()
         mViewModel.getAndroidAndIos()
-
     }
 
     override fun showMessage(message: String) {

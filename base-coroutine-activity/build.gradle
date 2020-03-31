@@ -53,3 +53,8 @@ task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
 }
 
 //apply from: 'https://raw.github.com/Ayvytr/KotlinJavadocMavenPush/master/kotlin_maven_push.gradle'
+if (enableMavenPush) {
+//    dokka网络问题未解决，直接使用Java的maven_push打包
+//    apply from: '../kotlin_maven_push.gradle'
+    apply from: '../maven_push.gradle'
+}

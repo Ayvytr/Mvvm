@@ -2,7 +2,8 @@ package com.ayvytr.coroutine.viewmodel
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.ayvytr.coroutine.ErrorResponse
+import com.ayvytr.network.ApiClient
+import com.ayvytr.network.bean.ResponseMessage
 import kotlinx.coroutines.*
 
 /**
@@ -10,38 +11,39 @@ import kotlinx.coroutines.*
  */
 
 open class BaseViewModel : ViewModel(), CoroutineScope by MainScope() {
-    //是不是正在加载的LiveData，true：正在加载
-    val loadingLiveData = MutableLiveData<Boolean>()
+    //是不是正在加载的LiveData，true：正在加载.
+    val mLoadingLiveData = MutableLiveData<Boolean>()
 
-    //接受错误信息的LiveData
-    val errorLiveData = MutableLiveData<ErrorResponse>()
+    //接受网络请求的LiveData，建议订阅用来只接收网络请求错误.
+    val mResponseLiveData = MutableLiveData<ResponseMessage>()
 
-    val networkExceptionHandler =
-        CoroutineExceptionHandler { coroutineContext, exception ->
-            loadingLiveData.value = false
-            errorLiveData.value = parseNetworkResponse(exception)
+    /**
+     * catch and parse http exception, use [mResponseLiveData] to observe.
+     */
+    val mNetworkExceptionHandler =
+        CoroutineExceptionHandler { _, throwable ->
+            mLoadingLiveData.value = false
+            mResponseLiveData.value = ApiClient.throwable2ResponseMessage.invoke(throwable)
         }
 
     override fun onCleared() {
         cancel()
     }
 
-    private fun loading(isLoading: Boolean = true) {
-        loadingLiveData.value = isLoading
-    }
-
     /**
-     * 把异常转换成需要在界面上提示的文本.
+     * show loading or hide loading.
+     * @param isLoading `true`: show loading
      */
-    fun parseNetworkResponse(exception: Throwable): ErrorResponse {
-        return ErrorResponse(exception.toString(), exception = exception)
+    private fun loading(isLoading: Boolean = true) {
+        mLoadingLiveData.value = isLoading
     }
 
+
     /**
-     * [launch] + [loading]，封装方法，简化显示/隐藏loading
+     * [launch] + [loading].
      */
     fun launchLoading(block: suspend () -> Unit) {
-        launch(networkExceptionHandler) {
+        launch(mNetworkExceptionHandler) {
             loading()
             block()
             loading(false)

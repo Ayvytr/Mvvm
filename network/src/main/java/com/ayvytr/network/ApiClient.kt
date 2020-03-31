@@ -1,6 +1,7 @@
 package com.ayvytr.network
 
 import android.os.Environment
+import com.ayvytr.network.bean.ResponseMessage
 import com.ayvytr.network.interceptor.CacheInterceptor
 import com.ayvytr.network.interceptor.CacheNetworkInterceptor
 import com.ayvytr.network.provider.ContextProvider
@@ -9,10 +10,12 @@ import com.ayvytr.okhttploginterceptor.LoggingLevel
 import okhttp3.Cache
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.io.File
+import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
 
 /**
@@ -30,6 +33,7 @@ class ApiClient private constructor() {
     private val retrofitMap: HashMap<String, Retrofit> = hashMapOf()
 
     /**
+     * Init [ApiClient].
      * @param cache if null, no cache
      */
     @JvmOverloads
@@ -48,6 +52,10 @@ class ApiClient private constructor() {
             .writeTimeout(longOkHttpTimeoutSeconds, TimeUnit.SECONDS)
 
         if (cache != null) {
+            /**
+             * 两个拦截器内容相同，主要解决了第一次请求网络没有缓存返回504的问题.
+             * @see [https://stackoverflow.com/questions/23429046/can-retrofit-with-okhttp-use-cache-data-when-offline?r=SearchResults]
+             */
             builder.cache(cache)
                 .addInterceptor(CacheInterceptor(cacheMaxAgeSeconds))
                 .addNetworkInterceptor(CacheNetworkInterceptor(cacheMaxAgeSeconds))
@@ -114,6 +122,32 @@ class ApiClient private constructor() {
         @JvmStatic
         fun getInstance(): ApiClient {
             return SingletonHolder.NETWORK
+        }
+
+        /**
+         * Convert Http throwable to [ResponseMessage], override this to customize your response
+         * message, string res and code.
+         */
+        @JvmField
+        var throwable2ResponseMessage: (Throwable?) -> ResponseMessage = {
+            var message = ""
+            var code = 0
+            when (it) {
+                is UnknownHostException -> message = "网络连接中断"
+                is HttpException -> {
+                    message = it.message()
+                    code = it.code()
+                }
+                else -> {
+                    message = it.toString()
+                    code = 0
+                }
+            }
+            ResponseMessage(
+                message,
+                code = code,
+                throwable = it
+            )
         }
     }
 }

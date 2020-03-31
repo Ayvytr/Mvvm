@@ -1,59 +1,67 @@
 package com.ayvytr.coroutine
 
-import android.arch.lifecycle.Lifecycle
-import android.arch.lifecycle.LifecycleObserver
-import android.arch.lifecycle.OnLifecycleEvent
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProvider
 import android.os.Bundle
 import android.support.annotation.StringRes
 import android.support.v7.app.AppCompatActivity
 import android.widget.Toast
-import kotlinx.coroutines.*
-import kotlin.coroutines.CoroutineContext
-
-interface BaseObserver : LifecycleObserver {
-    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-    fun onCreated()
-}
+import com.ayvytr.coroutine.viewmodel.BaseViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 
 /**
- * Base Activity with coroutine, used to inherit it. You can launch coroutine with [launchWithLoading] or [launch], and
- * don't need to call [Job.cancel].
+ * Base Activity with coroutine, used to inherit it.
  * @author Ayvytr
  */
-open class BaseCoroutineActivity : AppCompatActivity(), CoroutineScope by MainScope() {
-
-    /**
-     * Must use field of [Job].
-     */
-    private val mBaseJob = Job()
-
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + mBaseJob
+open class BaseCoroutineActivity<T : BaseViewModel> : AppCompatActivity(), IInit,
+    CoroutineScope by MainScope() {
 
     lateinit var baseObserver: BaseObserver
 
+    protected lateinit var mViewModel: T
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        val contentView = getContentView()
-//        if (contentView > 0) {
-//            setContentView(contentView)
-//        }
         baseObserver = object : BaseObserver {
-            override fun onCreated() {
+            override fun onCreateEvent() {
                 initView(savedInstanceState)
                 initData(savedInstanceState)
             }
         }
         lifecycle.addObserver(baseObserver)
+        initBaseViewModel()
     }
 
-
-    open fun initView(savedInstanceState: Bundle?) {
+    /**
+     * 如果继承的子类传入的泛型不是[BaseViewModel],需要重写这个方法，提供自定义的[BaseViewModel]子类.
+     */
+    protected open fun getViewModelClass(): Class<T> {
+        return BaseViewModel::class.java as Class<T>
     }
 
-    open fun initData(savedInstanceState: Bundle?) {
+    open fun initBaseViewModel() {
+        mViewModel = ViewModelProvider(viewModelStore,
+                                       ViewModelProvider.NewInstanceFactory()).get(getViewModelClass())
+
+        mViewModel.mLoadingLiveData.observe(this, Observer {
+            showLoading(it!!)
+        })
+        mViewModel.mResponseLiveData.observe(this, Observer {
+            showMessage(it!!.message!!)
+        })
     }
 
+    /**
+     * 没有提供getLayoutRes方法获取子类布局，可以在[onCreate]，或者[initView]中调用[setContentView]
+     * 初始化view.
+     */
+    override fun initView(savedInstanceState: Bundle?) {
+    }
+
+    override fun initData(savedInstanceState: Bundle?) {
+    }
 
     override fun onDestroy() {
         super.onDestroy()
@@ -61,52 +69,17 @@ open class BaseCoroutineActivity : AppCompatActivity(), CoroutineScope by MainSc
         lifecycle.removeObserver(baseObserver)
     }
 
-    protected open fun showLoading() {
+    override fun showLoading(isShow: Boolean) {
+
     }
 
-
-    protected open fun hideLoading() {
+    override fun showMessage(@StringRes strId: Int) {
+        showMessage(getString(strId))
     }
 
-    protected open fun showError(@StringRes strId: Int) {
-        showError(getString(strId))
+    override fun showMessage(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
-
-    protected open fun showError(error: String) {
-        Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
-    }
-
-    /**
-     * Launch coroutine with [showLoading], [block] and [hideLoading], if you don't need [showLoading] or [hideLoading],
-     * just call [launch].
-     */
-    fun launchWithLoading(block: suspend () -> Unit) {
-        launch {
-            showLoading()
-            try {
-                block()
-            } catch (e: Exception) {
-                when (e) {
-                    //Ignore CancellationException
-                    is CancellationException -> {
-                    }
-                    else -> {
-                        showError(getExceptionString(e))
-                    }
-                }
-            }
-            hideLoading()
-        }
-    }
-
-    /**
-     * Convert Exception to a string that can displayed on the interface, used when you need to parse conversion error
-     * information (such as multi-language configuration), overwrite it.
-     *
-     * @param e Exception
-     * @see [Throwable.toVisibleString]
-     */
-    protected open fun getExceptionString(e: Exception) = e.toVisibleString()
 
 }
 

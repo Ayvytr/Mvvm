@@ -1,7 +1,7 @@
 package com.ayvytr.coroutine.viewmodel
 
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import android.arch.lifecycle.MutableLiveData
+import android.arch.lifecycle.ViewModel
 import com.ayvytr.network.ApiClient
 import com.ayvytr.network.bean.ResponseMessage
 import kotlinx.coroutines.*

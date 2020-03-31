@@ -1,4 +1,4 @@
-package com.ayvytr.coroutine.viewmodel
+package com.ayvytr.coroutine
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel

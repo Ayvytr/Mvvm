@@ -4,7 +4,7 @@
 
 
 
-base-coroutine-activity：BaseViewModel和BaseCoroutineActivity组合的项目，BaseViewModel默认提供了mLoadingLiveData和mResponseLiveData，分别专职接收loading显示/隐藏，网络异常响应。 [![](https://img.shields.io/badge/jCenter-0.3.0-red.svg)](https://bintray.com/ayvytr/maven/base-coroutine-activity/_latestVersion)
+base-coroutine-activity：BaseViewModel和BaseCoroutineActivity组合的项目，BaseViewModel默认提供了mLoadingLiveData和mResponseLiveData，分别专职接收loading显示/隐藏，网络异常响应。 [![](https://img.shields.io/badge/jCenter-0.3.1-red.svg)](https://bintray.com/ayvytr/maven/base-coroutine-activity/_latestVersion)
 
 network：网络封装库，2.1.0起基于OKhttp 4.4和Retrofit 2.8.1。 [![](https://img.shields.io/badge/jCenter-2.1.1-red.svg)](https://bintray.com/ayvytr/maven/network/_latestVersion)
 
@@ -26,7 +26,7 @@ android和androidx通用
 
 android
 
-​	implementation 'com.ayvytr:base-coroutine-activity:0.3.0'
+​	implementation 'com.ayvytr:base-coroutine-activity:0.3.1'
 
 
 
@@ -38,14 +38,15 @@ android
 
 androidx
 
-​	implementation 'com.ayvytr:base-coroutine-activity-androidx:0.3.0'
+​	implementation 'com.ayvytr:base-coroutine-activity-androidx:0.3.1'
 
 
 
 ## ChangeLog
 
 ### base-coroutine-activity-androidx
-
+* 0.3.1
+    1.修改BaseViewModel重复问题
 * 0.3.0  
     1. 增加ViewModel支持和BaseViewModel
     2. 去除BaseCoroutineActivity，BaseCoroutineFragment不必要的协程支持。

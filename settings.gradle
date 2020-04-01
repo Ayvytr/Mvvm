@@ -1,1 +1,4 @@
-include ':base-coroutine-activity-androidx', ':androidx-app', 'base-coroutine-activity', ':base-adapter', ':network'
+include ':base-coroutine-activity-androidx','base-coroutine-activity'
+include ':androidx-app'
+//include ':base-adapter'
+include ':network'

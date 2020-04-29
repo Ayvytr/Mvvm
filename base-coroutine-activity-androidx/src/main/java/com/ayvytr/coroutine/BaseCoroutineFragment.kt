@@ -23,7 +23,7 @@ open class BaseCoroutineFragment<T : BaseViewModel> : Fragment(), IInit,
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initBaseViewModel()
+        initViewModel()
         initView(savedInstanceState)
         initData(savedInstanceState)
     }
@@ -32,10 +32,10 @@ open class BaseCoroutineFragment<T : BaseViewModel> : Fragment(), IInit,
      * 如果继承的子类传入的泛型不是[BaseViewModel],需要重写这个方法，提供自定义的[BaseViewModel]子类.
      */
     protected open fun getViewModelClass(): Class<T> {
-        return BaseViewModel::class.java as Class<T>
+        return getVmClazz(this) as Class<T>
     }
 
-    open fun initBaseViewModel() {
+    open fun initViewModel() {
         mViewModel = ViewModelProvider(this)[getViewModelClass()]
         mViewModel.mLoadingLiveData.observe(this, Observer {
             showLoading(it)

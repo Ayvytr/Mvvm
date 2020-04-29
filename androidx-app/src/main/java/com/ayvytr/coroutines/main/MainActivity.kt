@@ -16,9 +16,9 @@ class MainActivity : BaseCoroutineActivity<MainViewModel>() {
         pb.show(isShow)
     }
 
-    override fun getViewModelClass(): Class<MainViewModel> {
-        return MainViewModel::class.java
-    }
+//    override fun getViewModelClass(): Class<MainViewModel> {
+//        return MainViewModel::class.java
+//    }
 
     override fun initView(savedInstanceState: Bundle?) {
         super.initView(savedInstanceState)

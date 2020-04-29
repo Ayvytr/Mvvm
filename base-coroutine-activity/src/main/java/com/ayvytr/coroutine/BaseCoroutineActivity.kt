@@ -31,17 +31,17 @@ open class BaseCoroutineActivity<T : BaseViewModel> : AppCompatActivity(), IInit
             }
         }
         lifecycle.addObserver(baseObserver)
-        initBaseViewModel()
+        initViewModel()
     }
 
     /**
      * 如果继承的子类传入的泛型不是[BaseViewModel],需要重写这个方法，提供自定义的[BaseViewModel]子类.
      */
     protected open fun getViewModelClass(): Class<T> {
-        return BaseViewModel::class.java as Class<T>
+        return getVmClazz(this) as Class<T>
     }
 
-    open fun initBaseViewModel() {
+    open fun initViewModel() {
         mViewModel = ViewModelProvider(viewModelStore,
                                        ViewModelProvider.NewInstanceFactory()).get(getViewModelClass())
 

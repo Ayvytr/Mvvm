@@ -24,8 +24,7 @@
                 android:layout_height="wrap_content"
                 android:padding="@dimen/_10dp"
                 android:text="默认字符串"
-                android:textColor="@color/aero"
-                android:textSize="@dimen/_30sp" />
+                android:textColor="@color/aero" />
 
             <TextView
                 android:id="@+id/tv_error"

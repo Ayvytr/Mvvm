@@ -1,9 +1,8 @@
-package com.ayvytr.network.interceptor
+package com.ayvytr.network
 
 import android.support.test.InstrumentationRegistry
 import android.support.test.runner.AndroidJUnit4
 import com.ayvytr.commonlibrary.bean.BaseGank
-import com.ayvytr.network.ApiClient
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -33,7 +32,7 @@ class ApiClientTest {
         val appContext = InstrumentationRegistry.getTargetContext()
 
         val apiClient = ApiClient.getInstance()
-        apiClient.init("http://google.com", appContext)
+        apiClient.init("http://google.com")
 
         Assert.assertNotNull(apiClient)
         Assert.assertEquals(apiClient.baseUrl, "http://google.com")

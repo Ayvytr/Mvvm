@@ -1,4 +1,4 @@
-package com.ayvytr.network.interceptor;
+package com.ayvytr.network;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

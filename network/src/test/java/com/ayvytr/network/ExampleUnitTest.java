@@ -1,4 +1,4 @@
-package com.ayvytr.network.interceptor;
+package com.ayvytr.network;
 
 import org.junit.Test;
 

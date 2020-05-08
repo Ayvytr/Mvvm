@@ -64,14 +64,13 @@ dependencies {
     implementation deps.base_adapter
 
     implementation 'ru.gildor.coroutines:kotlin-coroutines-retrofit:1.1.0'
+    implementation deps.network
 
 //    def enableJcenter = true
     def enableJcenter = false
     if (enableJcenter) {
-        implementation deps.network
         implementation deps.base_coroutine_activity_androidx
     } else {
-        implementation project(':network')
         implementation project(path: ':base-coroutine-activity-androidx')
     }
 

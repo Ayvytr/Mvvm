@@ -6,7 +6,7 @@
 
 base-coroutine-activity：BaseViewModel和BaseCoroutineActivity组合的项目，BaseViewModel默认提供了mLoadingLiveData和mResponseLiveData，分别专职接收loading显示/隐藏，网络异常响应。 [![](https://img.shields.io/badge/jCenter-0.3.2-red.svg)](https://bintray.com/ayvytr/maven/base-coroutine-activity/_latestVersion)
 
-network：网络封装库，2.1.0起基于OKhttp 4.4和Retrofit 2.8.1。 [![](https://img.shields.io/badge/jCenter-2.1.1-red.svg)](https://bintray.com/ayvytr/maven/network/_latestVersion)
+
 
 base-adapter：RecyclerView Adapter封装库（目前暂未提供androidx版本，如有需要可留言）。[![](https://img.shields.io/badge/jCenter-1.4.1-red.svg)](https://bintray.com/ayvytr/maven/base-adapter/_latestVersion)
 
@@ -15,12 +15,6 @@ base-adapter：RecyclerView Adapter封装库（目前暂未提供androidx版本�
 
 
 ## Import
-
-android和androidx通用
-
-​	//2.1.0 支持OkHttp 4.x，后续直接以OkHttp 4.x为基础进行更新
-
-​	implementation 'com.ayvytr:network:2.1.1'
 
 
 
@@ -59,31 +53,9 @@ androidx
     
 * 0.2.1  放弃OnBackPressed接口，因为没有完备的管理回退栈机制，仅仅使用接口无法根本解决问题
 
-### network
-
-* 2.1.1  增加APIClient.throwable2ResponseMessage，作为全局的Throwable转ResponseMessage的网络异常转换函数
-* 2.1.0  支持OkHttp 4.x，后续直接以OkHttp 4.x为基础进行更新
-
 
 
 ## Use
-
-## network
-
-```
-//初始化，默认开启了OKhttp缓存，cache=null关闭
-ApiClient.getInstance().init("https://gank.io/api/", cache = null)
-//覆盖重写自定义全局网络异常转为ResponseMessage
-ApiClient.throwable2ResponseMessage = {
-ResponseMessage("自定义错误", throwable = it)
-}
-
-//获取api，第二个参数传入不同的base url，获得使用另一个base url的Api接口
-private val api = ApiClient.getInstance().create(Api::class.java, other_url)
-
-```
-
-
 
 ### base-coroutine-activity
 

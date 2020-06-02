@@ -13,8 +13,8 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 
 /**
- * Base Fragment with coroutine, used to inherit it.
- * @author Ayvytr
+ * BaseFragment.
+ * @author Ayvytr ['s GitHub](https://github.com/Ayvytr)
  */
 open class BaseCoroutineFragment<T : BaseViewModel> : Fragment(), IInit,
     CoroutineScope by MainScope() {

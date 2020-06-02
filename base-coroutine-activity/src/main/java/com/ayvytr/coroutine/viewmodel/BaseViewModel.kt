@@ -2,12 +2,14 @@ package com.ayvytr.coroutine.viewmodel
 
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
+import com.ayvytr.coroutine.bean.ResponseWrapper
+import com.ayvytr.coroutine.wrapper
 import com.ayvytr.network.ApiClient
 import com.ayvytr.network.bean.ResponseMessage
 import kotlinx.coroutines.*
 
 /**
- * @author ayvytr
+ * @author Ayvytr ['s GitHub](https://github.com/Ayvytr)
  */
 
 open class BaseViewModel : ViewModel(), CoroutineScope by MainScope() {
@@ -34,7 +36,7 @@ open class BaseViewModel : ViewModel(), CoroutineScope by MainScope() {
      * show loading or hide loading.
      * @param isLoading `true`: show loading
      */
-    private fun loading(isLoading: Boolean = true) {
+    fun loading(isLoading: Boolean = true) {
         mLoadingLiveData.value = isLoading
     }
 
@@ -42,12 +44,39 @@ open class BaseViewModel : ViewModel(), CoroutineScope by MainScope() {
     /**
      * [launch] + [loading].
      */
-    fun launchLoading(block: suspend () -> Unit) {
+    fun launchLoading(showLoading:Boolean = true, block: suspend () -> Unit) {
         launch(mNetworkExceptionHandler) {
-            loading()
+            if(showLoading) {
+                loading()
+            }
             block()
-            loading(false)
+            if(showLoading) {
+                loading(false)
+            }
         }
     }
 
+    fun <T> launchWrapper(
+        liveData: MutableLiveData<ResponseWrapper<T>>,
+        showLoading: Boolean = true,
+        function: suspend () -> ResponseWrapper<T>
+    ) {
+        launch {
+            if (showLoading) {
+                loading()
+            }
+
+            runCatching {
+                function()
+            }.onSuccess {
+                liveData.postValue(it)
+            }.onFailure {
+                liveData.postValue(it.wrapper<T>())
+            }
+
+            if (showLoading) {
+                loading(false)
+            }
+        }
+    }
 }

@@ -16,28 +16,28 @@ class SecondActivity : BaseCoroutineActivity<MainViewModel>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-//        setContentView(R.layout.activity_second)
+//        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_second)
     }
 
     override fun initView(savedInstanceState: Bundle?) {
         super.initView(savedInstanceState)
         getContext()
         setTitle("SecondActivity")
-//        supportFragmentManager.beginTransaction()
-//            .add(R.id.fl, SecondFragment(), SecondFragment::class.java.name)
-//            .commit()
-//        launch{
-//            mViewModel.mLoadingLiveData.value = true
-//            delay(2000)
-//            mViewModel.mLoadingLiveData.value = false
-//        }
-        btn_get_data.setOnClickListener {
-            mViewModel.getAndroidAndIos()
+        supportFragmentManager.beginTransaction()
+            .add(R.id.fl, SecondFragment(), SecondFragment::class.java.name)
+            .commit()
+        launch{
+            mViewModel.mLoadingLiveData.value = true
+            delay(2000)
+            mViewModel.mLoadingLiveData.value = false
         }
-        mViewModel.androidAndIosLiveData.observe(this, Observer {
-            tv_value.text = it.toString()
-        })
+//        btn_get_data.setOnClickListener {
+//            mViewModel.getAndroidAndIos()
+//        }
+//        mViewModel.androidAndIosLiveData.observe(this, Observer {
+//            tv_value.text = it.toString()
+//        })
     }
 
     override fun showLoading(isShow: Boolean) {

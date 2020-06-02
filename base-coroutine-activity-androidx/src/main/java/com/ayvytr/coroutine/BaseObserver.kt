@@ -5,7 +5,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 
 /**
- * @author ayvytr
+ * @author Ayvytr ['s GitHub](https://github.com/Ayvytr)
  */
 interface BaseObserver : LifecycleObserver {
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)

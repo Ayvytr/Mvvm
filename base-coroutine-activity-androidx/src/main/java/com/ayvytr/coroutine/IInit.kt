@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.annotation.StringRes
 
 /**
- * @author ayvytr
+ * @author Ayvytr ['s GitHub](https://github.com/Ayvytr)
  */
 interface IInit {
     fun initView(savedInstanceState: Bundle?)

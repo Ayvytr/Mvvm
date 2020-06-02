@@ -4,7 +4,7 @@
 
 
 
-base-coroutine-activity：BaseViewModel和BaseCoroutineActivity组合的项目，BaseViewModel默认提供了mLoadingLiveData和mResponseLiveData，分别专职接收loading显示/隐藏，网络异常响应。 [![](https://img.shields.io/badge/jCenter-0.3.2-red.svg)](https://bintray.com/ayvytr/maven/base-coroutine-activity/_latestVersion)
+base-coroutine-activity：BaseViewModel和BaseCoroutineActivity组合的项目，BaseViewModel默认提供了mLoadingLiveData和mResponseLiveData，分别专职接收loading显示/隐藏，网络异常响应。 [![](https://img.shields.io/badge/jCenter-0.3.3-red.svg)](https://bintray.com/ayvytr/maven/base-coroutine-activity/_latestVersion)
 
 
 
@@ -20,7 +20,7 @@ base-adapter：RecyclerView Adapter封装库（目前暂未提供androidx版本�
 
 android
 
-​	implementation 'com.ayvytr:base-coroutine-activity:0.3.2'
+​	implementation 'com.ayvytr:base-coroutine-activity:0.3.3'
 
 
 
@@ -32,13 +32,18 @@ android
 
 androidx
 
-​	implementation 'com.ayvytr:base-coroutine-activity-androidx:0.3.2'
+​	implementation 'com.ayvytr:base-coroutine-activity-androidx:0.3.3'
 
 
 
 ## ChangeLog
 
 ### base-coroutine-activity-androidx
+
+* 0.3.3
+
+  增加BaseViewModel.launchWrapper方法使用ResponseWrapper包装网络相应，便于在一个页面多个接口，返回值和返回错误做分别处理
+
 * 0.3.2
   
     改进getViewModelClass方法，子类可以不用重写

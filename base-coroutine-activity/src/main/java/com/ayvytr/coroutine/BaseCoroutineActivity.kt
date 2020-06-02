@@ -12,8 +12,8 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 
 /**
- * Base Activity with coroutine, used to inherit it.
- * @author Ayvytr
+ * BaseActivity.
+ * @author Ayvytr ['s GitHub](https://github.com/Ayvytr)
  */
 open class BaseCoroutineActivity<T : BaseViewModel> : AppCompatActivity(), IInit,
     CoroutineScope by MainScope() {

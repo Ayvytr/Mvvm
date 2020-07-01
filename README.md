@@ -8,12 +8,6 @@ base-coroutine-activity：BaseViewModel和BaseCoroutineActivity组合的项目�
 
 
 
-base-adapter：RecyclerView Adapter封装库（目前暂未提供androidx版本，如有需要可留言）。[![](https://img.shields.io/badge/jCenter-1.4.1-red.svg)](https://bintray.com/ayvytr/maven/base-adapter/_latestVersion)
-
-
-
-
-
 ## Import
 
 
@@ -21,12 +15,6 @@ base-adapter：RecyclerView Adapter封装库（目前暂未提供androidx版本�
 android
 
 ​	implementation 'com.ayvytr:base-coroutine-activity:0.3.3'
-
-
-
-​	//未提供androidx版本
-
-​	implementation 'com.ayvytr:base-adapter:1.4.1'
 
 
 

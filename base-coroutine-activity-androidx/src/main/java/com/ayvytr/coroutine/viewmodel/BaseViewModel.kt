@@ -2,11 +2,10 @@ package com.ayvytr.coroutine.viewmodel
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.ayvytr.coroutine.bean.ResponseWrapper
-import com.ayvytr.coroutine.wrapper
 import com.ayvytr.network.ApiClient
-import com.ayvytr.network.bean.ResponseMessage
+import com.ayvytr.network.bean.BaseResponse
+import com.ayvytr.network.bean.ResponseWrapper
+import com.ayvytr.network.wrap
 import kotlinx.coroutines.*
 
 /**
@@ -17,7 +16,7 @@ open class BaseViewModel : ViewModel(), CoroutineScope by MainScope() {
     val mLoadingLiveData = MutableLiveData<Boolean>()
 
     //接受网络请求的LiveData，建议订阅用来只接收网络请求错误.
-    val mResponseLiveData = MutableLiveData<ResponseMessage>()
+    val mResponseLiveData = MutableLiveData<BaseResponse>()
 
     /**
      * catch and parse http exception, use [mResponseLiveData] to observe.
@@ -71,27 +70,13 @@ open class BaseViewModel : ViewModel(), CoroutineScope by MainScope() {
             }.onSuccess {
                 liveData.postValue(it)
             }.onFailure {
-                liveData.postValue(it.wrapper<T>())
+                liveData.postValue(it.wrap<T>())
             }
 
             if (showLoading) {
                 loading(false)
             }
         }
-//        viewModelScope.launch {
-//            if (showLoading) {
-//                loading()
-//            }
-//            val response = try {
-//                function()
-//            } catch (e: Exception) {
-//                e.wrapper<T>()
-//            }
-//            liveData.postValue(response)
-//            if (showLoading) {
-//                loading(false)
-//            }
-//        }
     }
 
 }

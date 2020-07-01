@@ -5,20 +5,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
-import com.ayvytr.coroutine.BaseCoroutineFragment
-import com.ayvytr.coroutine.viewmodel.BaseViewModel
+import com.ayvytr.coroutine.BaseFragment
 import com.ayvytr.coroutines.R
 import com.ayvytr.coroutines.main.MainViewModel
 import com.ayvytr.ktx.ui.show
 import com.ayvytr.logger.L
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
  * @author EDZ
  */
-class SecondFragment : BaseCoroutineFragment<MainViewModel>() {
+class SecondFragment : BaseFragment<MainViewModel>() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.activity_main, container, false)
@@ -26,7 +26,7 @@ class SecondFragment : BaseCoroutineFragment<MainViewModel>() {
 
     override fun initView(savedInstanceState: Bundle?) {
         super.initView(savedInstanceState)
-        launch {
+        GlobalScope.launch {
             mViewModel.mLoadingLiveData.value = true
             delay(3000)
             mViewModel.mLoadingLiveData.value = false

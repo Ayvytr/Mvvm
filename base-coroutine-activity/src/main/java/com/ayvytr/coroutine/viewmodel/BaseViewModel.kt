@@ -2,22 +2,21 @@ package com.ayvytr.coroutine.viewmodel
 
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
-import com.ayvytr.coroutine.bean.ResponseWrapper
-import com.ayvytr.coroutine.wrapper
 import com.ayvytr.network.ApiClient
-import com.ayvytr.network.bean.ResponseMessage
+import com.ayvytr.network.bean.BaseResponse
+import com.ayvytr.network.bean.ResponseWrapper
+import com.ayvytr.network.wrap
 import kotlinx.coroutines.*
 
 /**
  * @author Ayvytr ['s GitHub](https://github.com/Ayvytr)
  */
-
 open class BaseViewModel : ViewModel(), CoroutineScope by MainScope() {
     //是不是正在加载的LiveData，true：正在加载.
     val mLoadingLiveData = MutableLiveData<Boolean>()
 
     //接受网络请求的LiveData，建议订阅用来只接收网络请求错误.
-    val mResponseLiveData = MutableLiveData<ResponseMessage>()
+    val mResponseLiveData = MutableLiveData<BaseResponse>()
 
     /**
      * catch and parse http exception, use [mResponseLiveData] to observe.
@@ -44,7 +43,7 @@ open class BaseViewModel : ViewModel(), CoroutineScope by MainScope() {
     /**
      * [launch] + [loading].
      */
-    fun launchLoading(showLoading:Boolean = true, block: suspend () -> Unit) {
+    fun launchLoading(showLoading: Boolean = true, block: suspend () -> Unit) {
         launch(mNetworkExceptionHandler) {
             if(showLoading) {
                 loading()
@@ -71,7 +70,7 @@ open class BaseViewModel : ViewModel(), CoroutineScope by MainScope() {
             }.onSuccess {
                 liveData.postValue(it)
             }.onFailure {
-                liveData.postValue(it.wrapper<T>())
+                liveData.postValue(it.wrap<T>())
             }
 
             if (showLoading) {
@@ -79,4 +78,5 @@ open class BaseViewModel : ViewModel(), CoroutineScope by MainScope() {
             }
         }
     }
+
 }

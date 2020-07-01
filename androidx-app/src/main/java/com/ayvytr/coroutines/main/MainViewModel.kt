@@ -1,10 +1,10 @@
 package com.ayvytr.coroutines.main
 
 import androidx.lifecycle.MutableLiveData
-import com.ayvytr.coroutine.bean.ResponseWrapper
 import com.ayvytr.coroutine.viewmodel.BaseViewModel
 import com.ayvytr.coroutines.bean.BaseGank
 import com.ayvytr.coroutines.bean.Gank
+import com.ayvytr.network.bean.ResponseWrapper
 import kotlinx.coroutines.async
 import okhttp3.internal.toImmutableList
 

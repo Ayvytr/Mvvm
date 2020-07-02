@@ -21,7 +21,7 @@ open class BaseViewModel : ViewModel(), CoroutineScope by MainScope() {
     /**
      * catch and parse http exception, use [mResponseLiveData] to observe.
      */
-    val mNetworkExceptionHandler =
+    protected var mNetworkExceptionHandler =
         CoroutineExceptionHandler { _, throwable ->
             mLoadingLiveData.value = false
             mResponseLiveData.value = ApiClient.throwable2ResponseMessage.invoke(throwable)
@@ -31,30 +31,26 @@ open class BaseViewModel : ViewModel(), CoroutineScope by MainScope() {
         cancel()
     }
 
-    /**
-     * show loading or hide loading.
-     * @param isLoading `true`: show loading
-     */
-    fun loading(isLoading: Boolean = true) {
-        mLoadingLiveData.value = isLoading
-    }
-
 
     /**
-     * [launch] + [loading].
+     * [launch] + [loading]，适合页面所有请求错误处理都一样的情况.
+     * 建议使用[launchWrapper]，更适合灵活多变的情况.
      */
     fun launchLoading(showLoading: Boolean = true, block: suspend () -> Unit) {
         launch(mNetworkExceptionHandler) {
-            if(showLoading) {
-                loading()
+            if (showLoading) {
+                mLoadingLiveData.value = true
             }
             block()
-            if(showLoading) {
-                loading(false)
+            if (showLoading) {
+                mLoadingLiveData.value = false
             }
         }
     }
 
+    /**
+     * [launch]+[loading]+[liveData]，[ResponseWrapper]封装了响应体，适合不同接口错误处理不一致的情况.
+     */
     fun <T> launchWrapper(
         liveData: MutableLiveData<ResponseWrapper<T>>,
         showLoading: Boolean = true,
@@ -62,7 +58,7 @@ open class BaseViewModel : ViewModel(), CoroutineScope by MainScope() {
     ) {
         launch {
             if (showLoading) {
-                loading()
+                mLoadingLiveData.value = true
             }
 
             runCatching {
@@ -74,7 +70,7 @@ open class BaseViewModel : ViewModel(), CoroutineScope by MainScope() {
             }
 
             if (showLoading) {
-                loading(false)
+                mLoadingLiveData.value = false
             }
         }
     }

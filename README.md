@@ -1,10 +1,15 @@
-# Android Coroutines Library 
+# Android Mvvm [![](https://img.shields.io/badge/jCenter-0.1.0-red.svg)](https://bintray.com/ayvytr/maven/mvvm-androidx/_latestVersion)
 
-一系列便于组件化开发的封装库，从ModularizationComponent合并了base-adapter, network，放弃了以前的MVP和rxlifecycle封装库。以base-coroutine-activity库为主的项目。
+Android Kotlin Mvvm框架，使用了ViewModel, LiveData,  协程Coroutine，为简化开发而生。
 
 
 
-base-coroutine-activity：BaseViewModel和BaseCoroutineActivity组合的项目，BaseViewModel默认提供了mLoadingLiveData和mResponseLiveData，分别专职接收loading显示/隐藏，网络异常响应。 [![](https://img.shields.io/badge/jCenter-0.3.3-red.svg)](https://bintray.com/ayvytr/maven/base-coroutine-activity/_latestVersion)
+搭配如下框架使用，效果更佳
+
+```
+implementation "com.ayvytr:network:2.3.0"
+implementation "com.ayvytr:ktx:2.5.0"
+```
 
 
 
@@ -14,168 +19,23 @@ base-coroutine-activity：BaseViewModel和BaseCoroutineActivity组合的项目�
 
 android
 
-​	implementation 'com.ayvytr:base-coroutine-activity:0.3.3'
+​	implementation 'com.ayvytr:mvvm:0.1.0'
 
 
 
 androidx
 
-​	implementation 'com.ayvytr:base-coroutine-activity-androidx:0.3.3'
+​	implementation 'com.ayvytr:mvvm-androidx:0.1.0'
 
 
 
 ## ChangeLog
 
-### base-coroutine-activity-androidx
-
-* 0.3.3
-
-  增加BaseViewModel.launchWrapper方法使用ResponseWrapper包装网络相应，便于在一个页面多个接口，返回值和返回错误做分别处理
-
-* 0.3.2
-  
-    改进getViewModelClass方法，子类可以不用重写
-    
-* 0.3.1
-    1.修改BaseViewModel重复问题
-    
-* 0.3.0  
-    1. 增加ViewModel支持和BaseViewModel
-    2. 去除BaseCoroutineActivity，BaseCoroutineFragment不必要的协程支持。
-    3. BaseCoroutineActivity，BaseCoroutineFragment改为泛型初始化BaseViewModel
-    
-* 0.2.1  放弃OnBackPressed接口，因为没有完备的管理回退栈机制，仅仅使用接口无法根本解决问题
+* 0.1.0 框架第一版
 
 
 
-## Use
-
-### base-coroutine-activity
-
-```kotlin
-//Activity: 最简单的实现：直接使用BaseViewModel，继承BaseCoroutineActivity，重写showLoading，自定义当前页面显示和隐藏loading的逻辑，简单加一个launch，显示loading，并延迟两秒隐藏loading。
-class SecondActivity : BaseCoroutineActivity<BaseViewModel>() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-    }
-
-    override fun initView(savedInstanceState: Bundle?) {
-        super.initView(savedInstanceState)
-        getContext()
-        setTitle("SecondActivity")
-        launch{
-            mViewModel.mLoadingLiveData.value = true
-            delay(2000)
-            mViewModel.mLoadingLiveData.value = false
-        }
-    }
-
-    override fun showLoading(isShow: Boolean) {
-        progressBar.show(isShow)
-    }
-}
-
-```
-
-
-
-```kotlin
-//Activity: 带网络请求的例子，MainActivity，MainViewModel分别继承BaseViewModel，BaseCoroutineActivity，MainActivity传入泛型MainViewModel，重写getViewModelClass()，返回MainViewModel，自动初始化MainViewModel。
-//自定义当前页面的showLoading, showMessage, 并在MainViewModel中调用父类封装的launchLoading进行网络请求，BaseViewModel自动发送显示/隐藏loading的通知，以及网络请求异常的通知。
-class MainActivity : BaseCoroutineActivity<MainViewModel>() {
-
-
-    override fun showLoading(isShow: Boolean) {
-        pb.show(isShow)
-    }
-
-    override fun getViewModelClass(): Class<MainViewModel> {
-        return MainViewModel::class.java
-    }
-
-    override fun initView(savedInstanceState: Bundle?) {
-        super.initView(savedInstanceState)
-        setContentView(R.layout.activity_main)
-    }
-
-    override fun initData(savedInstanceState: Bundle?) {
-        mViewModel.androidAndIosLiveData.observe(this, Observer {
-            tv_value.text = it.toString()
-            tv_error.text = null
-        })
-
-        btn_get_data.setOnClickListener {
-            mViewModel.getAndroidAndIos()
-        }
-
-        mViewModel.getAndroidAndIos()
-    }
-
-    override fun showMessage(message: String) {
-        super.showMessage(message)
-        L.e("errorLiveData", message)
-        tv_error.text = message
-        pb.hide()
-    }
-}
-
-
-class MainViewModel : BaseViewModel() {
-    private val repository = MainRepository()
-    val androidGankLiveData = MutableLiveData<BaseGank>()
-    val iosGankLiveData = MutableLiveData<BaseGank>()
-    val androidAndIosLiveData = MutableLiveData<List<Gank>>()
-
-    fun getAndroidGank() {
-        launchLoading {
-            androidGankLiveData.value = repository.getAndroidGank()
-        }
-    }
-
-    fun getIosGank() {
-        launchLoading {
-            iosGankLiveData.value = repository.getIosGank()
-        }
-    }
-
-    fun getAndroidAndIos() {
-        launchLoading {
-            val android = async { repository.getAndroidGank() }.await()
-            val ios = async { repository.getIosGank() }.await()
-            val list = android.results!!.toMutableList()
-            list.addAll(ios.results!!)
-            androidAndIosLiveData.value = list
-        }
-    }
-}
-
-
-class MainRepository {
-    private val api = ApiClient.getInstance().create(Api::class.java)
-
-    suspend fun getAndroidGank(): BaseGank {
-        return api.getAndroidGank()
-    }
-
-    suspend fun getIosGank(): BaseGank {
-        return api.getIosGank()
-    }
-}
-
-
-
-interface Api {
-    @GET("data/iOS/2/1")
-    suspend fun getIosGank(): BaseGank
-
-    @GET("data/Android/2/1")
-    suspend fun getAndroidGank(): BaseGank
-}
-```
-
-
+## 使用
 
 
 
@@ -190,7 +50,7 @@ interface Api {
 
 
 
-## 别忘了点个Star！O(∩_∩)O~
+
 
 
 

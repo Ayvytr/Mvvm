@@ -1,2 +1,2 @@
-include ':base-coroutine-activity-androidx','base-coroutine-activity'
+include ':mvvm-androidx','mvvm'
 include ':androidx-app'

@@ -1,4 +1,4 @@
-# Android Mvvm [![](https://img.shields.io/badge/jCenter-0.1.0-red.svg)](https://bintray.com/ayvytr/maven/mvvm-androidx/_latestVersion)
+# Android Mvvm [![](https://img.shields.io/badge/jCenter-0.1.1-red.svg)](https://bintray.com/ayvytr/maven/mvvm-androidx/_latestVersion)
 
 Android Kotlin Mvvm框架，使用了ViewModel, LiveData,  协程Coroutine，为简化开发而生。
 
@@ -19,17 +19,19 @@ implementation "com.ayvytr:ktx:2.5.0"
 
 android
 
-​	implementation 'com.ayvytr:mvvm:0.1.0'
+​	implementation 'com.ayvytr:mvvm:0.1.1'
 
 
 
 androidx
 
-​	implementation 'com.ayvytr:mvvm-androidx:0.1.0'
+​	implementation 'com.ayvytr:mvvm-androidx:0.1.1'
 
 
 
 ## ChangeLog
+
+* 0.1.1 修改WrapperObserver为abstract class，并提供onError默认实现
 
 * 0.1.0 框架第一版
 

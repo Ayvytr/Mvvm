@@ -23,7 +23,7 @@ abstract class WrapperObserver<T>(private val iInit: IInit? = null) :
 
     abstract fun onSucceed(data: T)
 
-    fun onError(
+    open fun onError(
         exception: ResponseException?,
         message: String,
         messageStringId: Int

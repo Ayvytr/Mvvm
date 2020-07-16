@@ -15,13 +15,13 @@ abstract class WrapperObserver<T>(private val iInit: IInit? = null) :
 
     override fun onChanged(wrapper: ResponseWrapper<T>?) {
         if (wrapper!!.isSucceed) {
-            onSucceed(wrapper.dataNonNull)
+            onSucceed(wrapper.dataNonNull, wrapper)
         } else {
             onError(wrapper.exception, wrapper.message, wrapper.messageStringId)
         }
     }
 
-    abstract fun onSucceed(data: T)
+    abstract fun onSucceed(data: T, wrapper: ResponseWrapper<T>?)
 
     open fun onError(
         exception: ResponseException?,

@@ -33,7 +33,7 @@ abstract class WrapperObserver<T>(private val iInit: IInit? = null) :
                 Resources.getSystem().getString(messageStringId)
                 iInit.showMessage(messageStringId)
             } catch (e: Exception) {
-                iInit.showMessage(message!!)
+                iInit.showMessage(message)
             }
         }
     }

@@ -36,8 +36,8 @@ open class BaseViewModel : ViewModel(), CoroutineScope by MainScope() {
      * [launch] + [loading]，适合页面所有请求错误处理都一样的情况.
      * 建议使用[launchWrapper]，更适合灵活多变的情况.
      */
-    fun launchLoading(showLoading: Boolean = true, block: suspend () -> Unit) {
-        launch(mNetworkExceptionHandler) {
+    fun launchLoading(showLoading: Boolean = true, block: suspend () -> Unit): Job {
+        return launch(mNetworkExceptionHandler) {
             if (showLoading) {
                 mLoadingLiveData.value = true
             }
@@ -55,8 +55,8 @@ open class BaseViewModel : ViewModel(), CoroutineScope by MainScope() {
         liveData: MutableLiveData<ResponseWrapper<T>>,
         showLoading: Boolean = true,
         function: suspend () -> ResponseWrapper<T>
-    ) {
-        launch {
+    ): Job {
+        return launch {
             if (showLoading) {
                 mLoadingLiveData.value = true
             }

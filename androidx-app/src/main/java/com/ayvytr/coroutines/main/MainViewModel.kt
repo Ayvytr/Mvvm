@@ -4,7 +4,9 @@ import androidx.lifecycle.MutableLiveData
 import com.ayvytr.coroutine.viewmodel.BaseViewModel
 import com.ayvytr.coroutines.bean.BaseGank
 import com.ayvytr.coroutines.bean.Gank
+import com.ayvytr.logger.L
 import com.ayvytr.network.bean.ResponseWrapper
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import okhttp3.internal.toImmutableList
 
@@ -18,6 +20,10 @@ class MainViewModel : BaseViewModel() {
 
     //    val androidAndIosLiveData = MutableLiveData<List<Gank>>()
     val androidAndIosLiveDataPost = MutableLiveData<ResponseWrapper<List<Gank>>>()
+
+    val jobMap by lazy {
+        hashMapOf<String, Job>()
+    }
 
     fun getAndroidGank() {
         launchLoading {
@@ -46,12 +52,17 @@ class MainViewModel : BaseViewModel() {
 //    }
 
     fun getAndroidAndIosPost() {
-        launchWrapper(androidAndIosLiveDataPost) {
+        L.e(androidAndIosLiveDataPost.toString())
+        val key = androidAndIosLiveDataPost.toString()
+        var job = jobMap[key]
+        job?.cancel()
+        job = launchWrapper(androidAndIosLiveDataPost) {
             val android = async { repository.getAndroidGank() }.await()
             val ios = async { repository.getIosGank() }.await()
             val list = android.results!!.toMutableList()
             list.addAll(ios.results!!)
             ResponseWrapper(list.toImmutableList())
         }
+        jobMap[key] = job
     }
 }

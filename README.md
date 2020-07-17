@@ -31,6 +31,8 @@ androidx
 
 ## ChangeLog
 
+* 0.1.3 增加WrapperObserver.onSucceed ResponseWrapper参数
+
 * 0.1.2 修改launchLoading，launchWrapper方法返回Job
 
 * 0.1.1 修改WrapperObserver为abstract class，并提供onError默认实现

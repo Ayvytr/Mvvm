@@ -1,8 +1,8 @@
 package com.ayvytr.coroutine.observer
 
-import android.content.res.Resources
 import androidx.lifecycle.Observer
 import com.ayvytr.coroutine.internal.IInit
+import com.ayvytr.coroutine.internal.showMessage
 import com.ayvytr.network.bean.ResponseWrapper
 import com.ayvytr.network.exception.ResponseException
 
@@ -15,27 +15,16 @@ abstract class WrapperObserver<T>(private val iInit: IInit? = null) :
 
     override fun onChanged(wrapper: ResponseWrapper<T>) {
         if (wrapper.isSucceed) {
-            onSucceed(wrapper.dataNonNull, wrapper)
+            onSucceed(wrapper.dataNonNull)
         } else {
-            onError(wrapper.exception, wrapper.message, wrapper.messageStringId)
+            onError(wrapper.exception!!)
         }
     }
 
-    abstract fun onSucceed(data: T, wrapper: ResponseWrapper<T>)
+    abstract fun onSucceed(data: T)
 
-    open fun onError(
-        exception: ResponseException?,
-        message: String,
-        messageStringId: Int
-    ) {
-        iInit?.let {
-            try {
-                Resources.getSystem().getString(messageStringId)
-                iInit.showMessage(messageStringId)
-            } catch (e: Exception) {
-                iInit.showMessage(message)
-            }
-        }
+    open fun onError(exception: ResponseException) {
+        iInit?.showMessage(exception)
     }
 
 }

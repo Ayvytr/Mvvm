@@ -73,9 +73,6 @@ abstract class BaseFragment<T : BaseViewModel> : Fragment(),
         mViewModel.mLoadingLiveData.observe(this, Observer {
             showLoading(it!!)
         })
-        mViewModel.mResponseLiveData.observe(this, Observer {
-            showMessage(it!!.message)
-        })
     }
 
 

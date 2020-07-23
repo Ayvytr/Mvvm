@@ -19,8 +19,7 @@ import com.ayvytr.coroutine.viewmodel.BaseViewModel
  * BaseFragment.
  * @author Ayvytr ['s GitHub](https://github.com/Ayvytr)
  */
-abstract class BaseFragment<T : BaseViewModel> : Fragment(),
-    IInit {
+abstract class BaseFragment<T : BaseViewModel> : Fragment(), IInit {
 
     protected lateinit var mViewModel: T
 
@@ -71,9 +70,6 @@ abstract class BaseFragment<T : BaseViewModel> : Fragment(),
         mViewModel = ViewModelProvider(this)[getViewModelClass()]
         mViewModel.mLoadingLiveData.observe(this, Observer {
             showLoading(it)
-        })
-        mViewModel.mResponseLiveData.observe(this, Observer {
-            showMessage(it.message)
         })
     }
 

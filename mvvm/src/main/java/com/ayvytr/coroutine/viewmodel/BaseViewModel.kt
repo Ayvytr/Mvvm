@@ -2,8 +2,6 @@ package com.ayvytr.coroutine.viewmodel
 
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
-import com.ayvytr.network.ApiClient
-import com.ayvytr.network.bean.BaseResponse
 import com.ayvytr.network.bean.ResponseWrapper
 import com.ayvytr.network.wrap
 import kotlinx.coroutines.*
@@ -15,36 +13,12 @@ open class BaseViewModel : ViewModel(), CoroutineScope by MainScope() {
     //是不是正在加载的LiveData，true：正在加载.
     val mLoadingLiveData = MutableLiveData<Boolean>()
 
-    //接受网络请求的LiveData，建议订阅用来只接收网络请求错误.
-    val mResponseLiveData = MutableLiveData<BaseResponse>()
-
-    /**
-     * catch and parse http exception, use [mResponseLiveData] to observe.
-     */
-    protected var mNetworkExceptionHandler =
-        CoroutineExceptionHandler { _, throwable ->
-            mLoadingLiveData.value = false
-            mResponseLiveData.value = ApiClient.throwable2ResponseMessage.invoke(throwable)
-        }
+    val jobMap by lazy {
+        hashMapOf<String, Job>()
+    }
 
     override fun onCleared() {
         cancel()
-    }
-
-    /**
-     * [launch] + [loading]，适合页面所有请求错误处理都一样的情况.
-     * 建议使用[launchWrapper]，更适合灵活多变的情况.
-     */
-    fun launchLoading(showLoading: Boolean = true, block: suspend () -> Unit): Job {
-        return launch(mNetworkExceptionHandler) {
-            if(showLoading) {
-                mLoadingLiveData.value = true
-            }
-            block()
-            if(showLoading) {
-                mLoadingLiveData.value = false
-            }
-        }
     }
 
     /**
@@ -65,7 +39,12 @@ open class BaseViewModel : ViewModel(), CoroutineScope by MainScope() {
             }.onSuccess {
                 liveData.postValue(it)
             }.onFailure {
-                liveData.postValue(it.wrap<T>())
+                /**
+                 * 不推[Job.cancel]引发的[CancellationException].
+                 */
+                if (it !is CancellationException) {
+                    liveData.postValue(it.wrap<T>())
+                }
             }
 
             if (showLoading) {
@@ -74,4 +53,20 @@ open class BaseViewModel : ViewModel(), CoroutineScope by MainScope() {
         }
     }
 
+    @Synchronized
+    fun cancelJob(key: String) {
+        val job = jobMap[key]
+        job?.apply {
+            if (isActive) {
+                cancel()
+            }
+            jobMap.remove(key)
+        }
+    }
+
+    @Synchronized
+    fun addJob(key: String, job: Job) {
+        cancelJob(key)
+        jobMap[key] = job
+    }
 }

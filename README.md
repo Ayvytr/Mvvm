@@ -1,4 +1,4 @@
-# Android Mvvm [![](https://img.shields.io/badge/jCenter-0.1.2-red.svg)](https://bintray.com/ayvytr/maven/mvvm-androidx/_latestVersion)
+# Android Mvvm [![](https://img.shields.io/badge/jCenter-0.1.4-red.svg)](https://bintray.com/ayvytr/maven/mvvm-androidx/_latestVersion)
 
 Android Kotlin Mvvm框架，使用了ViewModel, LiveData,  协程Coroutine，为简化开发而生。
 
@@ -19,17 +19,23 @@ implementation "com.ayvytr:ktx:2.5.0"
 
 android
 
-​	implementation 'com.ayvytr:mvvm:0.1.2'
+​	implementation 'com.ayvytr:mvvm:0.1.4'
 
 
 
 androidx
 
-​	implementation 'com.ayvytr:mvvm-androidx:0.1.2'
+​	implementation 'com.ayvytr:mvvm-androidx:0.1.4'
 
 
 
 ## ChangeLog
+
+* 0.1.4 
+  1. 删除BaseViewModel.mNetworkExceptionHandler，.launchLoading
+  2. 增加BaseViewModel.jobMap，用以方便取消未结束的Job
+  3. 修改WrapperObserver，增加WrapperListObserver专门支持List和分页相关参数
+  4. 
 
 * 0.1.3 增加WrapperObserver.onSucceed ResponseWrapper参数
 

@@ -1,7 +1,6 @@
 package com.ayvytr.coroutine
 
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProvider
+import android.arch.lifecycle.*
 import android.os.Bundle
 import android.support.annotation.StringRes
 import android.support.v7.app.AppCompatActivity
@@ -15,8 +14,7 @@ import com.ayvytr.coroutine.viewmodel.BaseViewModel
  * BaseActivity.
  * @author Ayvytr ['s GitHub](https://github.com/Ayvytr)
  */
-open class BaseActivity<T : BaseViewModel> : AppCompatActivity(),
-    IInit {
+open class BaseActivity<T : BaseViewModel> : AppCompatActivity(), IInit {
 
     private lateinit var baseObserver: BaseLifecycleObserver
 
@@ -47,9 +45,6 @@ open class BaseActivity<T : BaseViewModel> : AppCompatActivity(),
 
         mViewModel.mLoadingLiveData.observe(this, Observer {
             showLoading(it!!)
-        })
-        mViewModel.mResponseLiveData.observe(this, Observer {
-            showMessage(it!!.message)
         })
     }
 

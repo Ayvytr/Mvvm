@@ -6,7 +6,7 @@ import com.ayvytr.coroutines.bean.BaseGank
 import com.ayvytr.coroutines.bean.Gank
 import com.ayvytr.logger.L
 import com.ayvytr.network.bean.ResponseWrapper
-import kotlinx.coroutines.Job
+import com.ayvytr.network.wrap
 import kotlinx.coroutines.async
 import okhttp3.internal.toImmutableList
 
@@ -15,25 +15,21 @@ import okhttp3.internal.toImmutableList
  */
 class MainViewModel : BaseViewModel() {
     private val repository = MainRepository()
-    val androidGankLiveData = MutableLiveData<BaseGank>()
-    val iosGankLiveData = MutableLiveData<BaseGank>()
+    val androidGankLiveData = MutableLiveData<ResponseWrapper<BaseGank>>()
+    val iosGankLiveData = MutableLiveData<ResponseWrapper<BaseGank>>()
 
     //    val androidAndIosLiveData = MutableLiveData<List<Gank>>()
     val androidAndIosLiveDataPost = MutableLiveData<ResponseWrapper<List<Gank>>>()
 
-    val jobMap by lazy {
-        hashMapOf<String, Job>()
-    }
-
     fun getAndroidGank() {
-        launchLoading {
-            androidGankLiveData.value = repository.getAndroidGank()
+        launchWrapper(androidGankLiveData) {
+            repository.getAndroidGank().wrap()
         }
     }
 
     fun getIosGank() {
-        launchLoading {
-            iosGankLiveData.value = repository.getIosGank()
+        launchWrapper(iosGankLiveData) {
+            repository.getIosGank().wrap()
         }
     }
 
@@ -52,17 +48,16 @@ class MainViewModel : BaseViewModel() {
 //    }
 
     fun getAndroidAndIosPost() {
-        L.e(androidAndIosLiveDataPost.toString())
+//        L.e(androidAndIosLiveDataPost.toString())
         val key = androidAndIosLiveDataPost.toString()
-        var job = jobMap[key]
-        job?.cancel()
-        job = launchWrapper(androidAndIosLiveDataPost) {
+        cancelJob(key)
+        val job = launchWrapper(androidAndIosLiveDataPost) {
             val android = async { repository.getAndroidGank() }.await()
             val ios = async { repository.getIosGank() }.await()
             val list = android.results!!.toMutableList()
             list.addAll(ios.results!!)
             ResponseWrapper(list.toImmutableList())
         }
-        jobMap[key] = job
+        addJob(key, job)
     }
 }

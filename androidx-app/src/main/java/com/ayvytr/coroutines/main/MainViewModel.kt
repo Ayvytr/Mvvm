@@ -7,31 +7,34 @@ import com.ayvytr.coroutines.bean.Gank
 import com.ayvytr.logger.L
 import com.ayvytr.network.bean.ResponseWrapper
 import com.ayvytr.network.wrap
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import okhttp3.internal.toImmutableList
 
 /**
  * @author EDZ
  */
 class MainViewModel : BaseViewModel() {
-    private val repository = MainRepository()
+    val repository = MainRepository()
     val androidGankLiveData = MutableLiveData<ResponseWrapper<BaseGank>>()
     val iosGankLiveData = MutableLiveData<ResponseWrapper<BaseGank>>()
 
     //    val androidAndIosLiveData = MutableLiveData<List<Gank>>()
     val androidAndIosLiveDataPost = MutableLiveData<ResponseWrapper<List<Gank>>>()
 
-    fun getAndroidGank() {
-        launchWrapper(androidGankLiveData) {
-            repository.getAndroidGank().wrap()
-        }
-    }
-
-    fun getIosGank() {
-        launchWrapper(iosGankLiveData) {
-            repository.getIosGank().wrap()
-        }
-    }
+//    fun getAndroidGank() {
+//        launchWrapper(androidGankLiveData) {
+//            repository.getAndroidGank().wrap()
+//        }
+//    }
+//
+//    fun getIosGank() {
+//        launchWrapper(iosGankLiveData) {
+//            repository.getIosGank().wrap()
+//        }
+//    }
 
 //    fun getAndroidAndIos() {
 //        launchLoading {
@@ -59,5 +62,9 @@ class MainViewModel : BaseViewModel() {
             ResponseWrapper(list.toImmutableList())
         }
         addJob(key, job)
+    }
+
+    fun <T> getAndroidPostFlow() {
+//        return launchFlow(repository.api.getAndroidGank())
     }
 }

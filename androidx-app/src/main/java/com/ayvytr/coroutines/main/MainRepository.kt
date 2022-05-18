@@ -5,13 +5,13 @@ import com.ayvytr.coroutines.bean.BaseGank
 import com.ayvytr.network.ApiClient
 
 class MainRepository {
-    private val api = ApiClient.create(Api::class.java)
+    val api = ApiClient.create(Api::class.java)
 
     suspend fun getAndroidGank(): BaseGank {
-        return api.getAndroidGank()
+        return api.getAndroidGankSuspend()
     }
 
     suspend fun getIosGank(): BaseGank {
-        return api.getIosGank()
+        return api.getIosGankSuspend()
     }
 }

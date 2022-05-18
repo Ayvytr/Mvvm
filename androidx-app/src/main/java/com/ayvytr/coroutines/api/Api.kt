@@ -3,6 +3,7 @@ package com.ayvytr.coroutines.api
 import com.ayvytr.coroutines.bean.BaseGank
 import com.ayvytr.coroutines.bean.Gank
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.flow.Flow
 import retrofit2.http.GET
 
 /**
@@ -10,10 +11,10 @@ import retrofit2.http.GET
  */
 interface Api {
     @GET("data/iOS/2/1")
-    suspend fun getIosGank(): BaseGank
+    suspend fun getIosGankSuspend(): BaseGank
 
     @GET("data/Android/2/1")
-    suspend fun getAndroidGank(): BaseGank
+    suspend fun getAndroidGankSuspend(): BaseGank
 
     @GET("data/iOS/2/1")
     fun getIosGankDeferred(): Deferred<BaseGank>
@@ -21,4 +22,12 @@ interface Api {
     @GET("data/Android/2/1")
     fun getAndroidGankDeferred(): Deferred<BaseGank>
 
+    @GET("data/iOS/2/1")
+    fun getIosGank(): BaseGank
+
+    @GET("data/Android/2/1")
+    fun getAndroidGank(): BaseGank
+
+    @GET("data/Android/2/1")
+    fun getAndroidGankFlow(): Flow<BaseGank>
 }

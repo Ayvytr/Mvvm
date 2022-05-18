@@ -1,2 +1,2 @@
-include ':mvvm-androidx','mvvm'
+include ':mvvm-androidx'
 include ':androidx-app'

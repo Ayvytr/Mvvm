@@ -1,4 +1,8 @@
-# Android Mvvm [![](https://img.shields.io/badge/jCenter-0.1.4-red.svg)](https://bintray.com/ayvytr/maven/mvvm-androidx/_latestVersion)
+# ~~Android Mvvm：不再更新，请移步[Ayvytr/Flow](https://github.com/Ayvytr/Flow)~~
+
+
+
+#  [![](https://img.shields.io/badge/jCenter-0.1.4-red.svg)](https://bintray.com/ayvytr/maven/mvvm-androidx/_latestVersion)
 
 Android Kotlin Mvvm框架，使用了ViewModel, LiveData,  协程Coroutine，为简化开发而生。
 

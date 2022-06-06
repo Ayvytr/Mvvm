@@ -1,4 +1,4 @@
-# ~~Android Mvvm：不再更新，请移步[Ayvytr/Flow](https://github.com/Ayvytr/Flow)~~
+# ~~Android Mvvm：不再更新，~~请移步[Ayvytr/Flow](https://github.com/Ayvytr/Flow)
 
 
 
